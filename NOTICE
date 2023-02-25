@@ -1,5 +1,5 @@
-CW20 Migration: Migrate away from those CW20s to native tokens
-Copyright 2023 Reece Williams
+Tokenfactory Contracts: Useful contracts to use and interact with the tokenfactory module.
+Copyright 2023 Juno Network
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
