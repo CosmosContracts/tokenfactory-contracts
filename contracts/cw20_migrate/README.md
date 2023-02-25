@@ -6,7 +6,7 @@ Modes: Mint  or send from this contract's bank balance
 
 ## Mode: mint
 
-This mode requires the [Tokenfactory Core Contract](https://github.com/Reecepbcups/tokenfactory-core-contract). It allows for multiple contracts to mint for a single native token-factory denomination. Once this contract is initialized and the admin token set to the middleware, you are then ready to get this contract set up.
+This mode requires the [Tokenfactory Core Contract](https://github.com/CosmosContracts/tokenfactory-contracts). It allows for multiple contracts to mint for a single native token-factory denomination. Once this contract is initialized and the admin token set to the middleware, you are then ready to get this contract set up.
 
 Steps to enable mint mode:
 

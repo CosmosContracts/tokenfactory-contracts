@@ -12,7 +12,7 @@ Add the following to your `Cargo.toml` dependencies for a contract. Then view th
 
 ```toml
 [dependencies]
-tokenfactory-types = { git = "https://github.com/Reecepbcups/tokenfactory-core-contract" }
+tokenfactory-types = { git = "https://github.com/CosmosContracts/tokenfactory-contracts" }
 ```
 
 You can view an example of how to use this in the [example contract](./contracts/tf_example/) or see the [e2e test](./e2e/test_e2e.sh) for a full example in bash.

@@ -19,7 +19,7 @@ TX_FLAGS="--gas-prices 0.1$DENOM --gas-prices="0ujunox" --gas 5000000 -y -b bloc
 export JUNOD_COMMAND_ARGS="$TX_FLAGS --from test-user"
 export KEY_ADDR="juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl"
 
-MAIN_REPO_RAW_ARTIFACTS="https://github.com/Reecepbcups/tokenfactory-core-contract/raw/main/artifacts"
+MAIN_REPO_RAW_ARTIFACTS="https://github.com/CosmosContracts/tokenfactory-contracts/raw/main/artifacts"
 
 function create_denom {
     RANDOM_STRING=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w 6 | head -n 1)
