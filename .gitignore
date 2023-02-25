@@ -1,0 +1,6 @@
+target
+artifacts
+.idea
+packages/*/schema
+contracts/*/schema
+.vscode

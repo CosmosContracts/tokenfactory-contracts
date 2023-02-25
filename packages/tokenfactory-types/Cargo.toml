@@ -1,0 +1,13 @@
+[package]
+name = "tokenfactory-types"
+version = "0.0.1"
+authors = ["Reece Williams <reecepbcups@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+cosmwasm-schema = "1.1"
+cosmwasm-std = "1.1"
+schemars = "0.8"
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+
+[dev-dependencies]
