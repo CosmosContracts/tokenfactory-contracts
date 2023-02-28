@@ -168,6 +168,8 @@ function test_native_contract {
     # 0 since this does not hold balance
     v=$($BINARY q bank balances $NATIVE_MIGRATE --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
     ASSERT_EQUAL "$v" "0"
+
+    $BINARY q wasm contract-state smart $NATIVE_MIGRATE '{"get_config":{}}' --output json | jq .data
 }
 test_native_contract
 
