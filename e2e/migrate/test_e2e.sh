@@ -70,7 +70,7 @@ function upload_cw20mint { # must run after uploading the tokenfactory core
     BASE_CODE_ID=$($BINARY q tx $UPLOAD --output json | jq -r '.logs[0].events[] | select(.type == "store_code").attributes[] | select(.key == "code_id").value') && echo "Code Id: $BASE_CODE_ID"
 
     # mode: balance or mint. If mint, contract_minter_address is required
-    PAYLOAD=$(printf '{"mode":"mint","cw20_token_address":"%s","contract_minter_address":"%s","tf_denom":"%s"}' $CW20_ADDR $TF_CONTRACT $FULL_DENOM) && echo $PAYLOAD
+    PAYLOAD=$(printf '{"cw20_token_address":"%s","contract_minter_address":"%s","tf_denom":"%s"}' $CW20_ADDR $TF_CONTRACT $FULL_DENOM) && echo $PAYLOAD
     TX_HASH=$($BINARY tx wasm instantiate "$BASE_CODE_ID" "$PAYLOAD" --label "cw20burnmint" $JUNOD_COMMAND_ARGS --admin "$KEY_ADDR" | jq -r '.txhash') && echo $TX_HASH
 
     export CW20_BURN=$($BINARY query tx $TX_HASH --output json | jq -r '.logs[0].events[0].attributes[0].value') && echo "CW20_BURN: $CW20_BURN"
@@ -85,32 +85,6 @@ function upload_cw20mint { # must run after uploading the tokenfactory core
     ASSERT_EQUAL "$(echo $v | jq -r .denoms[0])" "$FULL_DENOM"
     # the cw20burnmint address can now mint tokens from the TF_CONTRACT
 }
-function upload_cw20balance { # this does not use the middleware tokenfactory core. Just takes 
-    echo "Storing contract..."
-    # its from the root of the docker container
-    UPLOAD=$($BINARY tx wasm store /cw20_migrate.wasm $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $UPLOAD
-    BASE_CODE_ID=$($BINARY q tx $UPLOAD --output json | jq -r '.logs[0].events[] | select(.type == "store_code").attributes[] | select(.key == "code_id").value') && echo "Code Id: $BASE_CODE_ID"
-
-    # mode: balance or mint.
-    PAYLOAD=$(printf '{"mode":"balance","cw20_token_address":"%s","tf_denom":"%s"}' $CW20_ADDR $FULL_DENOM) && echo $PAYLOAD
-    TX_HASH=$($BINARY tx wasm instantiate "$BASE_CODE_ID" "$PAYLOAD" --label "cw20burnbalance" $JUNOD_COMMAND_ARGS --admin "$KEY_ADDR" | jq -r '.txhash') && echo $TX_HASH
-
-    export CW20_BALANCE=$($BINARY query tx $TX_HASH --output json | jq -r '.logs[0].events[0].attributes[0].value') && echo "CW20_BALANCE: $CW20_BALANCE"
-
-    # query
-    v=$($BINARY query wasm contract-state smart $CW20_BALANCE '{"get_config":{}}' --output json | jq -r .data) && echo $v
-    ASSERT_EQUAL "$(echo $v | jq -r .mode)" "balance"
-    
-    TOKENS_AMOUNT=50
-
-    # mint some tokenfactory tokens and send to CW20_BALANCE
-    $BINARY tx tokenfactory mint $TOKENS_AMOUNT$FULL_DENOM $JUNOD_COMMAND_ARGS
-    $BINARY tx bank send $KEY_ADDR $CW20_BALANCE $TOKENS_AMOUNT$FULL_DENOM $JUNOD_COMMAND_ARGS
-
-    # check CW20_BALANCE (50)
-    v=$($BINARY q bank balances $CW20_BALANCE --output json | jq -r .balances) && echo $v
-    ASSERT_EQUAL "$(echo $v | jq -r .[0].amount)" "$TOKENS_AMOUNT"
-}
 
 # === COPY ALL ABOVE TO SET ENVIROMENT UP LOCALLY ====
 
@@ -122,15 +96,12 @@ start_docker
 download_latest
 compile_and_copy # the compile takes time for the docker container to start up
 add_accounts
-# health check
-health_status
+
 # upload base contracts
 upload_cw20_base
 upload_tokenfactory_core
 
 # Our contracts
-upload_cw20balance # MUST CALL THIS FIRST BEFORE WE TRANSFER THE TOKENFACTORY TOKEN TO THE MINT MODULE
-
 transfer_denom_to_middleware_contract
 upload_cw20mint
 
@@ -166,25 +137,8 @@ function test_mint_contract {
     ASSERT_EQUAL "$v" "0"
 }
 
-function test_balance_contract {
-    # should be 5
-    v=$($BINARY q bank balances $KEY_ADDR --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
-    ASSERT_EQUAL "$v" "5"
-
-    sendCw20Msg $CW20_BALANCE "2"
-
-    # should be 7    
-    v=$($BINARY q bank balances $KEY_ADDR --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
-    ASSERT_EQUAL "$v" "7"
-
-    # ensure the balance of the cw20_balance contract went down 2
-    v=$($BINARY q bank balances $CW20_BALANCE --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
-    ASSERT_EQUAL "$v" "$(( $TOKENS_AMOUNT - 2 ))"
-}
-
 
 test_mint_contract
-test_balance_contract
 
 exit $FINAL_STATUS_CODE # from helpers.sh
 # then you can continue to use your TF_CONTRACT for other applications :D

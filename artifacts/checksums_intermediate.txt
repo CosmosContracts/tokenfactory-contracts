@@ -1,4 +1,4 @@
-20094bc519f373dfaa0ee12d1cf79ba38b26c74605b037e0bccb60b3f38a6cb1  ./target/wasm32-unknown-unknown/release/cw20_migrate.wasm
+c608d09c12717541f1012694438a38a936180b1995613914ead86749cf8c3939  ./target/wasm32-unknown-unknown/release/cw20_migrate.wasm
 307de97b8c787c64be4513a6a6b1b42bd241ee06cf5247f9bf8409311a9e0ae6  ./target/wasm32-unknown-unknown/release/native_migrate.wasm
 cdcf5bb4a969ae04a7444a6f68aea60d873cd11948f1e7f259311346134e1dd1  ./target/wasm32-unknown-unknown/release/tf_example.wasm
 603160c19bdcad30c339b238f5c16aff6bc0d10528ac04a5908968cd55ba2fb4  ./target/wasm32-unknown-unknown/release/tf_migrate.wasm
