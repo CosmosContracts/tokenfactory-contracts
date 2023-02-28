@@ -11,7 +11,7 @@ View documentation on how to set up your TokenFactory token and metadata: TODO.
 
 Steps to begin:
 
-- Initialize the core-middleware & token factory denom *(above link has a guide)*
+- Initialize the core-middleware & token factory denomination *(The above link has a guide)*
 - Initialize this migration contract with the following message
 
 ```json
@@ -49,9 +49,7 @@ Your contract is now ready for users to deposit a CW20 or native token. In retur
 
 <https://hackmd.io/@reecepbcups/cw20-to-tokenfactory>
 
-- CW20 standard contract with a migrate function (bankSend the factory denom to the contract, upload new CW20-tf-migrate if total CW20 supply <= held tokenfactory, convert all to the new denom)
-^ Will we hit a gas limit issue? since juno is only 10m per block
+- CW20 standard contract with a migrate function (BankSend the factory denominations to the contract, upload new CW20-tf-migrate if total CW20 supply <= held tokenfactory, convert all to the new denom)
+^ Will we hit a gas limit issue? since Juno is only 10m per block
 
-- IBC convert denoms, send to null address? since bank doesn't have burn
-
-- DAODAO native converts with VoteModule / CW20 wrappers (on usage of the token in DAODAO, it burns the CW20 and gives the user the native)
+- DAODAO native converts with VoteModule / CW20 wrappers (on the usage of the token in DAODAO, it burns the CW20 and gives the user the native)

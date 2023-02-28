@@ -26,6 +26,7 @@ pub fn instantiate(
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     let tf_denom = msg.tf_denom.clone();
+    let burn_denom = msg.burn_denom.clone();
 
     let cw20_token_address: Option<String> = match msg.cw20_token_address {
         Some(cw20_token_address) => {
@@ -35,17 +36,12 @@ pub fn instantiate(
         None => None,
     };
 
-    let burn_denom: Option<String> = match msg.burn_denom {
-        Some(burn_denom) => Some(burn_denom),
-        None => None,
-    };
-
-    // if cw20_token_address.is_some() && burn_denom.is_some() {
-    //     return Err(ContractError::InvalidDenom {
-    //         denom: tf_denom,
-    //         message: "Cannot set both burn_denom & cw20_token_address".to_string(),
-    //     });
-    // }
+    if cw20_token_address.is_some() && burn_denom.is_some() {
+        return Err(ContractError::InvalidDenom {
+            denom: tf_denom,
+            message: "Cannot set both burn_denom & cw20_token_address".to_string(),
+        });
+    }
 
     if !tf_denom.starts_with("factory/") {
         return Err(ContractError::InvalidDenom {
@@ -107,9 +103,7 @@ fn handle_cw20_burn(
     ))
 }
 
-fn handle_native(state: &State, info: &MessageInfo) -> Result<(CosmosMsg, Uint128), ContractError> {
-    // let sender = info.sender.to_string();
-
+fn handle_native(state: &State, info: &MessageInfo) -> Result<(CosmosMsg, Uint128), ContractError> {    
     if info.funds.is_empty() {
         return Err(ContractError::NoFundsSent {});
     }
@@ -126,7 +120,7 @@ fn handle_native(state: &State, info: &MessageInfo) -> Result<(CosmosMsg, Uint12
 
     if denom != state.burn_denom.as_deref().unwrap() {
         return Err(ContractError::InvalidDenom {
-            denom: denom,
+            denom,
             message: "This is not the correct denom to get the factory denom".to_string(),
         });
     }
@@ -149,7 +143,7 @@ pub fn execute_redeem_mint(
 
     let address_to_mint_to: String;
 
-    let (_burn_msg, amount) = if cw20_msg.is_some() {
+    let (burn_msg, amount) = if cw20_msg.is_some() {
         address_to_mint_to = cw20_msg.clone().unwrap().sender;
         handle_cw20_burn(&state, cw20_msg.as_ref().unwrap(), &info)?
     } else {
@@ -167,7 +161,7 @@ pub fn execute_redeem_mint(
 
     Ok(Response::new()
         .add_attribute("method", "execute_redeem_mint")
-        // .add_message(burn_msg)
+        .add_message(burn_msg)
         .add_message(WasmMsg::Execute {
             contract_addr: state.contract_minter_address,
             msg: to_binary(&mint_payload)?,

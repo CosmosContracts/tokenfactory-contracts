@@ -4,9 +4,8 @@
 # sh ./e2e/test_e2e.sh
 #
 # NOTES: anytime you use jq, use `jq -rc` for ASSERT_* functions (-c removes format, -r is raw to remove \" quotes)
-
-# get functions from helpers file 
-# -> query_contract, wasm_cmd, mint_cw721, send_nft_to_listing, send_cw20_to_listing
+#
+#
 source ./e2e/migrate/helpers.sh
 
 CONTAINER_NAME="tokenfactory_migrate_test"
@@ -49,6 +48,7 @@ function upload_cw20_base {
     CW20_TX_INIT=$($BINARY tx wasm instantiate "$BASE_CODE_ID" '{"name":"test","symbol":"aaaa","decimals":6,"initial_balances":[{"address":"juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl","amount":"100"}]}' --label "juno-cw20" $JUNOD_COMMAND_ARGS -y --admin $KEY_ADDR | jq -r '.txhash') && echo $CW20_TX_INIT
     export CW20_ADDR=$($BINARY query tx $CW20_TX_INIT --output json | jq -r '.logs[0].events[0].attributes[0].value') && echo "$CW20_ADDR"
 }
+
 function upload_tokenfactory_core {
     echo "Storing contract..."    
     create_denom # must run here
@@ -88,6 +88,7 @@ function upload_cw20mint { # must run after uploading the tokenfactory core
     ASSERT_EQUAL "$(echo $v | jq -r .denoms[0])" "$FULL_DENOM"
     # the cw20burnmint address can now mint tokens from the TF_CONTRACT
 }
+
 function upload_nativemigrate { # must run after uploading the tokenfactory core
     echo "Storing contract..."
     # its from the root of the docker container
@@ -122,17 +123,11 @@ add_accounts
 
 # upload base contracts
 upload_cw20_base
-upload_tokenfactory_core
 
 # cw20
+upload_tokenfactory_core
 transfer_denom_to_middleware_contract
 upload_cw20mint
-
-
-
-
-
-
 function test_cw20_contract {
     # get balance of the $KEY_ADDR
     # 0 initially
@@ -160,8 +155,6 @@ test_cw20_contract
 upload_tokenfactory_core
 transfer_denom_to_middleware_contract
 upload_nativemigrate
-
-
 function test_native_contract {
     v=$($BINARY q bank balances $KEY_ADDR --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
     ASSERT_EQUAL "$v" "0"
@@ -176,7 +169,6 @@ function test_native_contract {
     v=$($BINARY q bank balances $NATIVE_MIGRATE --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
     ASSERT_EQUAL "$v" "0"
 }
-
 test_native_contract
 
 

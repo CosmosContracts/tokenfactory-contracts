@@ -3,7 +3,7 @@ use cw20::Cw20ReceiveMsg;
 
 #[cw_serde]
 pub struct InstantiateMsg {
-    pub contract_minter_address: String, // core middleware contract. not required if you have mod=balance
+    pub contract_minter_address: String, // core middleware contract
 
     /// if not set, must set burn_denom
     pub cw20_token_address: Option<String>,
@@ -15,6 +15,7 @@ pub struct InstantiateMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
+    // Receives a CW20 send via the CW20's contract and mints the token
     Receive(Cw20ReceiveMsg),
     /// Converts a standard denom amount to the new token factory denom in a 1:1 ratio
     Convert {},
