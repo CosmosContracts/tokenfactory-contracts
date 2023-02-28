@@ -54,9 +54,7 @@ getrandom = { version = "0.2", features = ["js"] }
 strum = "0.24"
 strum_macros = "0.24"
 
-
 # middleware minting contract
-# tokenfactory-types = { git = "https://github.com/CosmosContracts/tokenfactory-contracts" }
 tokenfactory-types = { path = "../../packages/tokenfactory-types" }
 
 [dev-dependencies]
