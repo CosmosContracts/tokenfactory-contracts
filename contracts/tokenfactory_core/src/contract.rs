@@ -74,7 +74,7 @@ pub fn execute(
             is_contract_manager(state.clone(), info.sender)?;
 
             // add addresses if it is not in state.allowed_mint_addresses
-            let mut updated = state.allowed_mint_addresses.clone();
+            let mut updated = state.allowed_mint_addresses;
             for new in addresses {
                 if !updated.contains(&new) {
                     updated.push(new);
@@ -92,7 +92,7 @@ pub fn execute(
             let state = STATE.load(deps.storage)?;
             is_contract_manager(state.clone(), info.sender)?;
 
-            let mut updated = state.allowed_mint_addresses.clone();
+            let mut updated = state.allowed_mint_addresses;
             for remove in addresses {
                 updated.retain(|a| a != &remove);
             }
@@ -108,7 +108,7 @@ pub fn execute(
             let state = STATE.load(deps.storage)?;
             is_contract_manager(state.clone(), info.sender)?;
 
-            let mut updated_denoms = state.denoms.clone();
+            let mut updated_denoms = state.denoms;
             for new in denoms {
                 if !updated_denoms.contains(&new) {
                     updated_denoms.push(new);
@@ -126,7 +126,7 @@ pub fn execute(
             let state = STATE.load(deps.storage)?;
             is_contract_manager(state.clone(), info.sender)?;
 
-            let mut updated_denoms = state.denoms.clone();
+            let mut updated_denoms = state.denoms;
             for remove in denoms {
                 updated_denoms.retain(|a| a != &remove);
             }
@@ -160,7 +160,7 @@ pub fn execute_transfer_admin(
     let updated_state: Vec<String> = state
         .denoms
         .iter()
-        .filter(|d| d.to_string() != denom.to_string())
+        .filter(|d| d.to_string() != *denom)
         .map(|d| d.to_string())
         .collect();
 
@@ -188,7 +188,7 @@ pub fn execute_mint(
 ) -> Result<Response<TokenFactoryMsg>, ContractError> {
     let state = STATE.load(deps.storage)?;
 
-    is_whitelisted(state.clone(), info.sender)?;
+    is_whitelisted(state, info.sender)?;
 
     let mint_msgs: Vec<TokenMsg> = mint_factory_token_messages(&address, &denoms)?;
 
@@ -215,7 +215,7 @@ pub fn execute_burn(
         .funds
         .iter()
         .cloned()
-        .partition(|coin| state.denoms.iter().any(|d| d.to_string() == coin.denom));
+        .partition(|coin| state.denoms.iter().any(|d| *d == coin.denom));
 
     let burn_msgs: Vec<TokenMsg> = factory_denoms
         .iter()

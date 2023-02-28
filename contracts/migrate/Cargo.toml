@@ -1,5 +1,5 @@
 [package]
-name = "cw20_migrate"
+name = "migrate"
 version = "0.1.0"
 authors = ["Reece <reece@notional.ventures>"]
 edition = "2018"
@@ -54,9 +54,8 @@ getrandom = { version = "0.2", features = ["js"] }
 strum = "0.24"
 strum_macros = "0.24"
 
-
 # middleware minting contract
-tokenfactory-types = { git = "https://github.com/Reecepbcups/tokenfactory-core-contract" }
+tokenfactory-types = { path = "../../packages/tokenfactory-types" }
 
 [dev-dependencies]
 cw-multi-test = "0.16.1"

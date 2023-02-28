@@ -17,17 +17,14 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    // if msg.core_factory_address is some
-
-    let config;
-    if msg.core_factory_address.is_some() {
+    let config = if msg.core_factory_address.is_some() {
         let core_addr = deps.api.addr_validate(&msg.core_factory_address.unwrap())?;
-        config = Config {
+        Config {
             core_address: Some(core_addr.to_string()),
-        };
+        }
     } else {
-        config = Config { core_address: None };
-    }
+        Config { core_address: None }
+    };
 
     STATE.save(deps.storage, &config)?;
 

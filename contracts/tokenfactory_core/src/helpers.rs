@@ -47,7 +47,7 @@ pub fn mint_factory_token_messages(
 
 // Makes the output of a vector of denominations much pretty. In the format:
 // 1000000:factory/juno1xxx/test, 1000000:factory/juno1xxx/test2
-pub fn pretty_denoms_output(denoms: &Vec<Coin>) -> String {
+pub fn pretty_denoms_output(denoms: &[Coin]) -> String {
     denoms
         .iter()
         .map(|d| format!("{}:{}", d.amount, d.denom))
