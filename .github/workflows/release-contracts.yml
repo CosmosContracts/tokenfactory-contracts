@@ -6,11 +6,8 @@ permissions:
   contents: write
 
 on:
-  push:
-    tags:
-      - 'v*'
-    branches:
-      - main      
+  release:
+    types: [created]    
 
 jobs:
   release:
