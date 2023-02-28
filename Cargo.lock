@@ -341,27 +341,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cw20_migrate"
-version = "0.1.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw-multi-test 0.16.2",
- "cw-storage-plus 1.0.1",
- "cw2 1.0.1",
- "cw20",
- "getrandom",
- "schemars",
- "serde",
- "strum",
- "strum_macros",
- "thiserror",
- "token-bindings-test",
- "tokenfactory-types",
-]
-
-[[package]]
 name = "der"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -593,7 +572,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "native_migrate"
+name = "migrate"
 version = "0.1.0"
 dependencies = [
  "cosmwasm-schema",
@@ -602,6 +581,7 @@ dependencies = [
  "cw-multi-test 0.16.2",
  "cw-storage-plus 1.0.1",
  "cw2 1.0.1",
+ "cw20",
  "getrandom",
  "schemars",
  "serde",

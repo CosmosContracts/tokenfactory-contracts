@@ -127,16 +127,15 @@ function send_nft_to_listing {
 }
 
 # CW20 Tokens
-function send_cw20_to_listing {
-    INTERATING_CONTRACT=$1
-    CW20_CONTRACT_ADDR=$2
-    AMOUNT=$3
-    LISTING_ID=$4
-    
-    LISTING_BASE64=`printf '{"add_funds_to_sale_cw20":{"listing_id":"%s"}}' $LISTING_ID | base64 -w 0`               
-    SEND_TOKEN_JSON=`printf '{"send":{"contract":"%s","amount":"%s","msg":"%s"}}' $INTERATING_CONTRACT $AMOUNT $LISTING_BASE64`        
+function send_cw20_msg {
+    THIS_CONTRACT=$1
+    AMOUNT=$2
 
-    wasm_cmd $CW20_CONTRACT_ADDR "$SEND_TOKEN_JSON" "" show_log
+    BASE64_MSG=$(echo -n "{"receive":{}}" | base64)
+    export EXECUTED_MINT_JSON=`printf '{"send":{"contract":"%s","amount":"%s","msg":"%s"}}' $THIS_CONTRACT "$AMOUNT" $BASE64_MSG` && echo $EXECUTED_MINT_JSON
+
+    # Base cw20 contract
+    TX=$($BINARY tx wasm execute "$CW20_ADDR" "$EXECUTED_MINT_JSON" $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $TX    
 }
 
 # ===============

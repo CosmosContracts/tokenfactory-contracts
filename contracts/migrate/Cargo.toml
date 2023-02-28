@@ -1,5 +1,5 @@
 [package]
-name = "native_migrate"
+name = "migrate"
 version = "0.1.0"
 authors = ["Reece <reece@notional.ventures>"]
 edition = "2018"
@@ -45,6 +45,7 @@ cosmwasm-std = "1.1"
 cosmwasm-storage = "1.1"
 cw-storage-plus = "1.0.0"
 cw2 = "1.0.0"
+cw20 = "1.0.0"
 schemars = "0.8"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 thiserror = "1.0"
@@ -53,9 +54,7 @@ getrandom = { version = "0.2", features = ["js"] }
 strum = "0.24"
 strum_macros = "0.24"
 
-
 # middleware minting contract
-# tokenfactory-types = { git = "https://github.com/CosmosContracts/tokenfactory-contracts" }
 tokenfactory-types = { path = "../../packages/tokenfactory-types" }
 
 [dev-dependencies]

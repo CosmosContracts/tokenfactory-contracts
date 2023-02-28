@@ -9,7 +9,7 @@
 # -> query_contract, wasm_cmd, mint_cw721, send_nft_to_listing, send_cw20_to_listing
 source ./e2e/migrate/helpers.sh
 
-CONTAINER_NAME="tokenfactory_migratecw20_test"
+CONTAINER_NAME="tokenfactory_migrate_test"
 BINARY="docker exec -i $CONTAINER_NAME junod"
 DENOM='ujunox'
 JUNOD_CHAIN_ID='testing'
@@ -40,7 +40,7 @@ function download_latest {
 }
 
 # ========================
-# === Contract Uploads ===
+# ===   Core Uploads   ===
 # ========================
 function upload_cw20_base {
     UPLOAD=$($BINARY tx wasm store /cw20_base.wasm $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $UPLOAD
@@ -50,8 +50,8 @@ function upload_cw20_base {
     export CW20_ADDR=$($BINARY query tx $CW20_TX_INIT --output json | jq -r '.logs[0].events[0].attributes[0].value') && echo "$CW20_ADDR"
 }
 function upload_tokenfactory_core {
-    echo "Storing contract..."
-    create_denom
+    echo "Storing contract..."    
+    create_denom # must run here
     UPLOAD=$($BINARY tx wasm store /tokenfactory_core.wasm $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $UPLOAD
     BASE_CODE_ID=$($BINARY q tx $UPLOAD --output json | jq -r '.logs[0].events[] | select(.type == "store_code").attributes[] | select(.key == "code_id").value') && echo "Code Id: $BASE_CODE_ID"
 
@@ -63,27 +63,50 @@ function upload_tokenfactory_core {
     export TF_CONTRACT=$($BINARY query tx $TX_HASH --output json | jq -r '.logs[0].events[0].attributes[0].value') && echo "TF_CONTRACT: $TF_CONTRACT"    
 }
 
+# ========================
+# === Contract Uploads ===
+# ========================
 function upload_cw20mint { # must run after uploading the tokenfactory core
     echo "Storing contract..."
     # its from the root of the docker container
-    UPLOAD=$($BINARY tx wasm store /cw20_migrate.wasm $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $UPLOAD
+    UPLOAD=$($BINARY tx wasm store /migrate.wasm $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $UPLOAD
     BASE_CODE_ID=$($BINARY q tx $UPLOAD --output json | jq -r '.logs[0].events[] | select(.type == "store_code").attributes[] | select(.key == "code_id").value') && echo "Code Id: $BASE_CODE_ID"
 
     # mode: balance or mint. If mint, contract_minter_address is required
     PAYLOAD=$(printf '{"cw20_token_address":"%s","contract_minter_address":"%s","tf_denom":"%s"}' $CW20_ADDR $TF_CONTRACT $FULL_DENOM) && echo $PAYLOAD
     TX_HASH=$($BINARY tx wasm instantiate "$BASE_CODE_ID" "$PAYLOAD" --label "cw20burnmint" $JUNOD_COMMAND_ARGS --admin "$KEY_ADDR" | jq -r '.txhash') && echo $TX_HASH
 
-    export CW20_BURN=$($BINARY query tx $TX_HASH --output json | jq -r '.logs[0].events[0].attributes[0].value') && echo "CW20_BURN: $CW20_BURN"
+    export CW20_MIGRATE=$($BINARY query tx $TX_HASH --output json | jq -r '.logs[0].events[0].attributes[0].value') && echo "CW20_MIGRATE: $CW20_MIGRATE"
 
-    # execute on the tokenfactory core as the admin to set this CW20_BURN contract to be allowed to mint on its behalf
-    PAYLOAD=$(printf '{"add_whitelist":{"addresses":["%s"]}}' $CW20_BURN) && echo $PAYLOAD
+    # execute on the tokenfactory core as the admin to set this CW20_MIGRATE contract to be allowed to mint on its behalf
+    PAYLOAD=$(printf '{"add_whitelist":{"addresses":["%s"]}}' $CW20_MIGRATE) && echo $PAYLOAD
     TX_HASH=$($BINARY tx wasm execute "$TF_CONTRACT" "$PAYLOAD" $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $TX_HASH
 
     # query the contract to see if it was added    
     v=$($BINARY query wasm contract-state smart $TF_CONTRACT '{"get_config":{}}' --output json | jq .data) && echo $v
-    ASSERT_EQUAL "$(echo $v | jq -r .allowed_mint_addresses[0])" "$CW20_BURN"
+    ASSERT_EQUAL "$(echo $v | jq -r .allowed_mint_addresses[0])" "$CW20_MIGRATE"
     ASSERT_EQUAL "$(echo $v | jq -r .denoms[0])" "$FULL_DENOM"
     # the cw20burnmint address can now mint tokens from the TF_CONTRACT
+}
+function upload_nativemigrate { # must run after uploading the tokenfactory core
+    echo "Storing contract..."
+    # its from the root of the docker container
+    UPLOAD=$($BINARY tx wasm store /migrate.wasm $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $UPLOAD
+    BASE_CODE_ID=$($BINARY q tx $UPLOAD --output json | jq -r '.logs[0].events[] | select(.type == "store_code").attributes[] | select(.key == "code_id").value') && echo "Code Id: $BASE_CODE_ID"
+
+    # mode: balance or mint. If mint, contract_minter_address is required
+    PAYLOAD=$(printf '{"burn_denom":"%s","contract_minter_address":"%s","tf_denom":"%s"}' "$DENOM" $TF_CONTRACT $FULL_DENOM) && echo $PAYLOAD
+    TX_HASH=$($BINARY tx wasm instantiate "$BASE_CODE_ID" "$PAYLOAD" --label "cw20burnmint" $JUNOD_COMMAND_ARGS --admin "$KEY_ADDR" | jq -r '.txhash') && echo $TX_HASH
+
+    export NATIVE_MIGRATE=$($BINARY query tx $TX_HASH --output json | jq -r '.logs[0].events[0].attributes[0].value') && echo "NATIVE_MIGRATE: $NATIVE_MIGRATE"
+    
+    PAYLOAD=$(printf '{"add_whitelist":{"addresses":["%s"]}}' $NATIVE_MIGRATE) && echo $PAYLOAD
+    TX_HASH=$($BINARY tx wasm execute "$TF_CONTRACT" "$PAYLOAD" $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $TX_HASH
+
+    # query the contract to see if it was added    
+    v=$($BINARY query wasm contract-state smart $TF_CONTRACT '{"get_config":{}}' --output json | jq .data) && echo $v
+    ASSERT_EQUAL "$(echo $v | jq -r .allowed_mint_addresses[0])" "$NATIVE_MIGRATE"
+    ASSERT_EQUAL "$(echo $v | jq -r .denoms[0])" "$FULL_DENOM"
 }
 
 # === COPY ALL ABOVE TO SET ENVIROMENT UP LOCALLY ====
@@ -101,44 +124,61 @@ add_accounts
 upload_cw20_base
 upload_tokenfactory_core
 
-# Our contracts
+# cw20
 transfer_denom_to_middleware_contract
 upload_cw20mint
 
 
-# we are going to send some balance from the CW20 to the cw20burnmint address and ensure they get the tokens in return
-function sendCw20Msg() {
-    THIS_CONTRACT=$1
-    AMOUNT=$2
 
-    BASE64_MSG=$(echo -n "{"receive":{}}" | base64)
-    export EXECUTED_MINT_JSON=`printf '{"send":{"contract":"%s","amount":"%s","msg":"%s"}}' $THIS_CONTRACT "$AMOUNT" $BASE64_MSG` && echo $EXECUTED_MINT_JSON
 
-    # Base cw20 contract
-    TX=$($BINARY tx wasm execute "$CW20_ADDR" "$EXECUTED_MINT_JSON" $JUNOD_COMMAND_ARGS | jq -r '.txhash') && echo $TX
-    # junod tx wasm execute "$CW20_ADDR" `printf '{"send":{"contract":"%s","amount":"5","msg":"e3JlZGVlbTp7fX0="}}' $BURN_ADDR` $JUNOD_COMMAND_ARGS
-}
 
-function test_mint_contract {
+
+function test_cw20_contract {
     # get balance of the $KEY_ADDR
     # 0 initially
     v=$($BINARY q bank balances $KEY_ADDR --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
     ASSERT_EQUAL "$v" "0"
 
     # send 5 via the cw20base contract
-    sendCw20Msg $CW20_BURN "5"
+    send_cw20_msg $CW20_MIGRATE "5"
 
     # should now be 5
     v=$($BINARY q bank balances $KEY_ADDR --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
     ASSERT_EQUAL "$v" "5"
 
     # 0 since this does not hold balance
-    v=$($BINARY q bank balances $CW20_BURN --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
+    v=$($BINARY q bank balances $CW20_MIGRATE --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
+    ASSERT_EQUAL "$v" "0"
+}
+test_cw20_contract
+
+
+
+
+
+# native
+upload_tokenfactory_core
+transfer_denom_to_middleware_contract
+upload_nativemigrate
+
+
+function test_native_contract {
+    v=$($BINARY q bank balances $KEY_ADDR --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
+    ASSERT_EQUAL "$v" "0"
+
+    # wasm execute on the NATIVE_MIGRATE contract
+    TX=$($BINARY tx wasm execute "$NATIVE_MIGRATE" '{"convert":{}}' --amount 2$DENOM $JUNOD_COMMAND_ARGS) && echo $TX
+    
+    v=$($BINARY q bank balances $KEY_ADDR --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
+    ASSERT_EQUAL "$v" "2"
+
+    # 0 since this does not hold balance
+    v=$($BINARY q bank balances $NATIVE_MIGRATE --denom $FULL_DENOM --output json | jq -r .amount) && echo $v
     ASSERT_EQUAL "$v" "0"
 }
 
+test_native_contract
 
-test_mint_contract
+
 
 exit $FINAL_STATUS_CODE # from helpers.sh
-# then you can continue to use your TF_CONTRACT for other applications :D

@@ -20,4 +20,7 @@ pub enum ContractError {
 
     #[error("{message:?}")]
     InvalidMinterAddress { message: String },
+
+    #[error("You must send funds to this endpoint to use it.")]
+    NoFundsSent {},
 }
