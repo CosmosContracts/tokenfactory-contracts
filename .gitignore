@@ -3,3 +3,4 @@ target
 packages/*/schema
 contracts/*/schema
 .vscode
+artifacts/
