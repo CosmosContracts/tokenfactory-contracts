@@ -1,5 +1,5 @@
 [package]
-name = "cw20_migrate"
+name = "native_migrate"
 version = "0.1.0"
 authors = ["Reece <reece@notional.ventures>"]
 edition = "2018"
@@ -45,7 +45,6 @@ cosmwasm-std = "1.1"
 cosmwasm-storage = "1.1"
 cw-storage-plus = "1.0.0"
 cw2 = "1.0.0"
-cw20 = "1.0.0"
 schemars = "0.8"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 thiserror = "1.0"
