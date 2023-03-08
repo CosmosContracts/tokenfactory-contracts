@@ -30,6 +30,9 @@ impl TokenInfo {
 pub struct MigrateConfig {
     pub tf_core_address: String,
     pub tf_denom: String,
+    pub start_after_addr: Option<String>,
+
+    pub burn_cw20_balances: bool,
 }
 
 /// Stores the contract configuration at the given key

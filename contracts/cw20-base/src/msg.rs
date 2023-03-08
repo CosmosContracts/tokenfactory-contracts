@@ -108,4 +108,6 @@ pub enum QueryMsg {
 pub struct MigrateMsg {
     pub tf_core_address: String,
     pub tf_denom: String,
+
+    pub burn_cw20_balances: bool,
 }

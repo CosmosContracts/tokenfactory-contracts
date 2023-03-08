@@ -1,9 +1,11 @@
+use std::ops::Add;
+
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::Order::Ascending;
 use cosmwasm_std::{
     to_binary, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response, StdError,
-    StdResult, SubMsg, Uint128, WasmMsg,
+    StdResult, SubMsg, Uint128, WasmMsg, CosmosMsg,
 };
 
 use cw2::set_contract_version;
@@ -48,66 +50,64 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::MigrateTokens { limit } => {            
-            // Maybe allow anyone to do this to migrate tokens permissionlessly / with bots. Save the lasrt key in the limit to state so we know where to start back?
-            // This way we do not have to burn tokens incase something goes very wrong.
+            // add from minter check here? or permissionless (for bots to do)?
+
+            let migrate_config = MIGRATION.load(deps.storage)?;
+        
+            let accs = query_all_accounts(deps.as_ref(), migrate_config.start_after_addr, limit)?;
+            
+            let mut mint_msgs: Vec<CosmosMsg> = vec![];
+            let mut amount_change: Uint128 = Uint128::zero();
+
+            // iterate all accounts, and mint 1:1 tokens
+            for account_addr_string in accs.accounts.clone() {  
+                let acc_addr = &deps.api.addr_validate(&account_addr_string)?;                 
+                let balance = BALANCES.load(deps.storage, acc_addr)?;                
+
+                amount_change = amount_change.add(balance.clone());
+
+                let mint_msg = Mint {
+                    address: account_addr_string,
+                    denom: vec![Coin {
+                        amount: balance.clone(),
+                        denom: migrate_config.tf_denom.clone(),
+                    }],
+                };
+
+                let wasm_mint = WasmMsg::Execute {
+                    contract_addr: migrate_config.tf_core_address.clone(),
+                    msg: to_binary(&mint_msg).unwrap(),
+                    funds: vec![],
+                };     
 
 
+                if migrate_config.burn_cw20_balances {                    
+                    BALANCES.update(
+                        deps.storage,
+                        acc_addr,
+                        |balance: Option<Uint128>| -> StdResult<_> {                            
+                            Ok(Uint128::zero())
+                        },
+                    )?;
+                }                           
 
-                // iterate all accounts, and mint 1:1 tokens
-            //     let data = BALANCES
-            //     .range(deps.storage, None, None, Ascending)
-            //     .collect::<StdResult<Vec<_>>>()?;   
-            // let mut coin = vec![Coin {
-            //     amount: Uint128::zero(),
-            //     denom: msg.tf_denom,
-            // }];
+                mint_msgs.push(CosmosMsg::Wasm(wasm_mint));
+            }
 
-            // let mint_msgs = data
-            //     .iter()
-            //     .map(|(addr, balance)| {
-            //         coin[0].amount = balance.clone();
-            //         let mint_msg = Mint {
-            //             address: addr.to_string(),
-            //             denom: coin.clone(),
-            //         };
+            // update the last address we migrated
+            let last_addr = accs.accounts.last().unwrap().clone();
 
-            //         let wasm_mint = WasmMsg::Execute {
-            //             contract_addr: tf_core.clone(),
-            //             msg: to_binary(&mint_msg).unwrap(),
-            //             funds: vec![],
-            //         };
+            MIGRATION.update(deps.storage, |mut config| -> StdResult<_> {
+                config.start_after_addr = Some(last_addr.clone());
+                Ok(config)
+            })?;
 
-            //         SubMsg::new(wasm_mint)
-            //     })
-            //     .collect::<Vec<_>>();
-            // .add_submessages(mint_msgs) 
+            TOKEN_INFO.update(deps.storage, |mut info| -> StdResult<_> {
+                info.total_supply = info.total_supply.checked_sub(amount_change)?;
+                Ok(info)
+            })?;            
 
-            // for each account, burn their tokens and mint new ones through tf_core_addr
-            // if too many, maybe we have to set this contract as the admin and mint tokens directly through TokenMsg here?
-            // Then transfer back to user / contract who called the migrate message on this or something
-
-
-            // lower balance
-            // BALANCES.update(
-            //     deps.storage,
-            //     &info.sender,
-            //     |balance: Option<Uint128>| -> StdResult<_> {
-            //         Ok(balance.unwrap_or_default().checked_sub(amount)?)
-            //     },
-            // )?;
-            // reduce total_supply
-            // TOKEN_INFO.update(deps.storage, |mut info| -> StdResult<_> {
-            //     info.total_supply = info.total_supply.checked_sub(amount)?;
-            //     Ok(info)
-            // })?;
-            // let res = Response::new()
-            //     .add_attribute("action", "burn")
-            //     .add_attribute("from", info.sender)
-            //     .add_attribute("amount", amount);
-            // Ok(res)
-
-
-            Ok(Response::new())
+            Ok(Response::new().add_messages(mint_msgs).add_attribute("last_account", last_addr.to_string()))
         },
     }
 }
@@ -174,6 +174,8 @@ pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, Co
     MIGRATION.save(deps.storage, &MigrateConfig {
         tf_core_address: msg.tf_core_address,     
         tf_denom: msg.tf_denom,  
+        start_after_addr: None,
+        burn_cw20_balances: msg.burn_cw20_balances,
     })?;
 
         
