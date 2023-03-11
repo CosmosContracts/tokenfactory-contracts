@@ -15,7 +15,7 @@ Add the following to your `Cargo.toml` dependencies for a contract. Then view th
 tokenfactory-types = { git = "https://github.com/CosmosContracts/tokenfactory-contracts" }
 ```
 
-You can view an example of how to use this in the [example contract](./contracts/tf_example/) or see the [e2e test](./e2e/test_e2e.sh) for a full example in bash.
+You can view an example of how to use this in the [example contract](https://github.com/CosmosContracts/tokenfactory-contracts/tree/main/contracts/tf_example/src) or see the [e2e test](https://github.com/CosmosContracts/tokenfactory-contracts/blob/main/e2e/core/test_e2e.sh) for a full example in bash.
 
 ---
 
@@ -24,10 +24,11 @@ You can view an example of how to use this in the [example contract](./contracts
 Mainnet Store Code: TBD
 
 ```sh
-# update [key] here
-FLAGS="--gas-prices="0.003ujuno" --gas auto -y -b block --chain-id juno-1 --node https://juno-rpc.reece.sh:443 --output json --from [key]"
+# for uni-6 TESTNET
+# update [key] here to be your local wallet's key or your wallet's address
+FLAGS="--gas-prices 0.003ujuno --gas auto --gas-adjustment 1.3 --chain-id uni-6 --node https://juno-testnet-rpc.polkachu.com:443 --output json --from [key]"
 
-# create a tokenfactory denomination via the CLI. 
+# create a tokenfactory denomination via the CLI.
 junod tx tokenfactory create-denom abcde $FLAGS
 # factory/juno1......./abcde is your new denom
 
