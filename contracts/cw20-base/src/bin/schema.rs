@@ -1,6 +1,6 @@
 use cosmwasm_schema::write_api;
 
-use cw20_base::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use cw20_base_tf::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 fn main() {
     write_api! {

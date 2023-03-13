@@ -78,6 +78,8 @@ impl InstantiateMsg {
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
+    /// Returns the current balance of the given address, 0 if unset.
+    #[returns(cw20::BalanceResponse)]
     /// Returns metadata on the contract - name, decimals, supply, etc.
     #[returns(cw20::TokenInfoResponse)]
     TokenInfo {},

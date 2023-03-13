@@ -366,7 +366,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cw20-base"
+name = "cw20-base-tf"
 version = "2.0.0"
 dependencies = [
  "cosmwasm-schema",

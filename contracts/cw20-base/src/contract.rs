@@ -2,32 +2,28 @@ use std::ops::Add;
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::Order::Ascending;
 use cosmwasm_std::{
-    to_binary, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response, StdError,
-    StdResult, SubMsg, Uint128, WasmMsg, CosmosMsg,
+    to_binary, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Response, StdError,
+    StdResult, Uint128, WasmMsg,
 };
 
 use cw2::set_contract_version;
-use cw20::{    
-    DownloadLogoResponse, EmbeddedLogo, Logo, MarketingInfoResponse, MinterResponse,
-    TokenInfoResponse,
-};
+use cw20::{DownloadLogoResponse, EmbeddedLogo, Logo, MinterResponse, TokenInfoResponse};
 use cw_utils::ensure_from_older_version;
 
-use crate::enumerable::{query_all_accounts};
+use crate::enumerable::query_all_accounts;
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{BALANCES, LOGO, MARKETING_INFO,
-    TOKEN_INFO, ALLOWANCES, ALLOWANCES_SPENDER, MIGRATION, MigrateConfig,
+use crate::state::{
+    MigrateConfig, ALLOWANCES, ALLOWANCES_SPENDER, BALANCES, LOGO, MARKETING_INFO, MIGRATION,
+    TOKEN_INFO,
 };
 
 use tokenfactory_types::msg::ExecuteMsg::Mint;
 
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:cw20-base";
+const CONTRACT_NAME: &str = "crates.io:cw20-base-tf";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -49,20 +45,19 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::MigrateTokens { limit } => {            
-            // add from minter check here? or permissionless (for bots to do)?
-
+        ExecuteMsg::MigrateTokens { limit } => {
+            // Permissionless so anyone can call migrate
             let migrate_config = MIGRATION.load(deps.storage)?;
-        
+
             let accs = query_all_accounts(deps.as_ref(), migrate_config.start_after_addr, limit)?;
-            
+
             let mut mint_msgs: Vec<CosmosMsg> = vec![];
             let mut amount_change: Uint128 = Uint128::zero();
 
             // iterate all accounts, and mint 1:1 tokens
-            for account_addr_string in accs.accounts.clone() {  
-                let acc_addr = &deps.api.addr_validate(&account_addr_string)?;                 
-                let balance = BALANCES.load(deps.storage, acc_addr)?;                
+            for account_addr_string in accs.accounts.clone() {
+                let acc_addr = &deps.api.addr_validate(&account_addr_string)?;
+                let balance = BALANCES.load(deps.storage, acc_addr)?;
 
                 amount_change = amount_change.add(balance.clone());
 
@@ -78,18 +73,15 @@ pub fn execute(
                     contract_addr: migrate_config.tf_core_address.clone(),
                     msg: to_binary(&mint_msg).unwrap(),
                     funds: vec![],
-                };     
+                };
 
-
-                if migrate_config.burn_cw20_balances {                    
+                if migrate_config.burn_cw20_balances {
                     BALANCES.update(
                         deps.storage,
                         acc_addr,
-                        |balance: Option<Uint128>| -> StdResult<_> {                            
-                            Ok(Uint128::zero())
-                        },
+                        |balance: Option<Uint128>| -> StdResult<_> { Ok(Uint128::zero()) },
                     )?;
-                }                           
+                }
 
                 mint_msgs.push(CosmosMsg::Wasm(wasm_mint));
             }
@@ -105,24 +97,43 @@ pub fn execute(
             TOKEN_INFO.update(deps.storage, |mut info| -> StdResult<_> {
                 info.total_supply = info.total_supply.checked_sub(amount_change)?;
                 Ok(info)
-            })?;            
+            })?;
 
-            Ok(Response::new().add_messages(mint_msgs).add_attribute("last_account", last_addr.to_string()))
-        },
+            // TODO: What to do when done migrating? Throw "Migration Complete" error?
+
+            Ok(Response::new()
+                .add_messages(mint_msgs)
+                .add_attribute("last_account", last_addr.to_string()))
+        } //// TODO support some more cw20 messages like burn and mint, can others as tf module supports them.
+          // ExecuteMsg::Burn { amount } => execute_burn(deps, env, info, amount),
+          // ExecuteMsg::Mint { recipient, amount } => execute_mint(deps, env, info, recipient, amount),
+          // ExecuteMsg::UpdateMarketing {
+          //     project,
+          //     description,
+          //     marketing,
+          // } => execute_update_marketing(deps, env, info, project, description, marketing),
+          // ExecuteMsg::UploadLogo(logo) => execute_upload_logo(deps, env, info, logo),
+          // ExecuteMsg::UpdateMinter { new_minter } => {
+          //     execute_update_minter(deps, env, info, new_minter)
+          // }
     }
 }
-
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 #[allow(unused_variables)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Minter {} => to_binary(&None as &Option<MinterResponse>),
-    
-        // Kept the same
-        QueryMsg::MarketingInfo {} => to_binary(&MARKETING_INFO.may_load(deps.storage)?.unwrap_or_default()),
+        // TODO return balance from token factory module
+        QueryMsg::Balance { address } => unimplemented!(),
+        // TODO keep the same interface, but return info from token factory module
+        QueryMsg::MarketingInfo {} => {
+            to_binary(&MARKETING_INFO.may_load(deps.storage)?.unwrap_or_default())
+        }
         QueryMsg::DownloadLogo {} => to_binary(&query_download_logo(deps)?),
-        QueryMsg::TokenInfo {} => to_binary(&query_token_info(deps)?),        
+        // TODO return token factory info rather than what is in the contract?
+        QueryMsg::TokenInfo {} => to_binary(&query_token_info(deps)?),
+        // TODO return all accounts from token factory rather than cw20 contract state
         QueryMsg::AllAccounts { start_after, limit } => {
             to_binary(&query_all_accounts(deps, start_after, limit)?)
         }
@@ -159,29 +170,31 @@ pub fn query_download_logo(deps: Deps) -> StdResult<DownloadLogoResponse> {
 pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
     ensure_from_older_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;    
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     // We migrate, then mint tokens to the other contract.
     deps.api.addr_validate(&msg.tf_core_address)?;
 
-    // check if msg.tf_denom starts with factory
+    // Check if msg.tf_denom starts with factory
     if !msg.tf_denom.starts_with("factory") {
         return Err(ContractError::InvalidDenom {});
     }
 
     // Save ther data for who mints & the denom to mint from said contract
     // This contract addr has to be whitelisted to do this.
-    MIGRATION.save(deps.storage, &MigrateConfig {
-        tf_core_address: msg.tf_core_address,     
-        tf_denom: msg.tf_denom,  
-        start_after_addr: None,
-        burn_cw20_balances: msg.burn_cw20_balances,
-    })?;
+    MIGRATION.save(
+        deps.storage,
+        &MigrateConfig {
+            tf_core_address: msg.tf_core_address,
+            tf_denom: msg.tf_denom,
+            start_after_addr: None,
+            burn_cw20_balances: msg.burn_cw20_balances,
+        },
+    )?;
 
-        
-    // clear all allowances that will never be used again
+    // Clear all allowances that will never be used again
     ALLOWANCES.clear(deps.storage);
     ALLOWANCES_SPENDER.clear(deps.storage);
-    
+
     Ok(Response::default())
 }
