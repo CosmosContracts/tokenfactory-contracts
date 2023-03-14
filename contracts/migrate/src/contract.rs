@@ -103,7 +103,7 @@ fn handle_cw20_burn(
     ))
 }
 
-fn handle_native(state: &State, info: &MessageInfo) -> Result<(CosmosMsg, Uint128), ContractError> {    
+fn handle_native(state: &State, info: &MessageInfo) -> Result<(CosmosMsg, Uint128), ContractError> {
     if info.funds.is_empty() {
         return Err(ContractError::NoFundsSent {});
     }

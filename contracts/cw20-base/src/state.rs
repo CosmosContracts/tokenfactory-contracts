@@ -2,7 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::{Item, Map};
 
-use cw20::{Logo, MarketingInfoResponse, AllowanceResponse};
+use cw20::{AllowanceResponse, Logo, MarketingInfoResponse};
 
 #[cw_serde]
 pub struct TokenInfo {
@@ -46,4 +46,5 @@ pub const BALANCES: Map<&Addr, Uint128> = Map::new("balance");
 
 // we clear these on migrate
 pub const ALLOWANCES: Map<(&Addr, &Addr), AllowanceResponse> = Map::new("allowance");
-pub const ALLOWANCES_SPENDER: Map<(&Addr, &Addr), AllowanceResponse> = Map::new("allowance_spender");
+pub const ALLOWANCES_SPENDER: Map<(&Addr, &Addr), AllowanceResponse> =
+    Map::new("allowance_spender");
