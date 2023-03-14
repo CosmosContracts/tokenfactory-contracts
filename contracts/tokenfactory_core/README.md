@@ -1,8 +1,15 @@
 # TokenFactory Core (middleware)
 
-This is a contract to which you give the admin of your token denomination from the TokenFactory module. It then allows other contracts you control to mint tokens on this contract's behalf via a WasmMsg.
+This is a contract to which you give the admin of your token denomination(s) from the TokenFactory module. Once this contract has that, it allows other contracts you/your DAO controls to mint tokens for your business logic needs (via a WasmMsg).
 
 This makes it more flexible since multiple contracts can "mint" tokens on behalf of the contract admin :D
+
+## Example Use Case
+
+$RAC has slots & dice contracts. If every game they want to mint 1 RAC for you for playing, both slots and dice would need to be admin of the token-factory token to mint
+With this core contract, a single contract is an admin, then the DAO can whitelist both the dice and slots address to mint tokens on its behalf.
+
+This way to mint $RAC natively, the dice contract would WasmMsg a mint to the core contract, to then give the user that token.
 
 ---
 
