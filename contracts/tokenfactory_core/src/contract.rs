@@ -149,25 +149,23 @@ pub fn execute_transfer_admin(
     let state = STATE.load(deps.storage)?;
     is_contract_manager(state.clone(), info.sender)?;
 
-    let denom = state.denoms.iter().find(|d| d.to_string() == denom).ok_or(
-        ContractError::InvalidDenom {
-            denom,
-            message: "Denom not found in state".to_string(),
-        },
-    )?;
+    // it is possible to transfer admin in without adding to contract state. So devs need a way to reclaim admin without adding it to denoms state
+    let state_denom: Option<&String> = state.denoms.iter().find(|d| d.to_string() == denom);
 
-    // remove denom from state
-    let updated_state: Vec<String> = state
-        .denoms
-        .iter()
-        .filter(|d| d.to_string() != *denom)
-        .map(|d| d.to_string())
-        .collect();
+    if state_denom.is_some() {
+        // remove it from state        
+        let updated_state: Vec<String> = state
+            .denoms
+            .iter()
+            .filter(|d| d.to_string() != *state_denom.unwrap())
+            .map(|d| d.to_string())
+            .collect();
 
-    STATE.update(deps.storage, |mut state| -> StdResult<_> {
-        state.denoms = updated_state;
-        Ok(state)
-    })?;
+        STATE.update(deps.storage, |mut state| -> StdResult<_> {
+            state.denoms = updated_state;
+            Ok(state)
+        })?;
+    }
 
     let msg = TokenMsg::ChangeAdmin {
         denom: denom.to_string(),

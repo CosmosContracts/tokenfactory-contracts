@@ -13,5 +13,5 @@ External
 Easy Migration UI: https://juno.reece.sh
 
 Mainnet Code IDs:
-- Middleware: 2310
-- Migrate: 2309
+- Middleware code_id: 2323
+- Migrate code_id: 2324
