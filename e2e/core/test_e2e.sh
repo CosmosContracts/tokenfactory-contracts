@@ -75,7 +75,7 @@ function upload_tokenfactory_core {
 # === LOGIC ===
 # =============
 
-start_docker
+IMAGE_TAG="reece-updated-tf-v14" start_docker
 add_accounts
 compile_and_copy # the compile takes time for the docker container to start up
 
@@ -94,7 +94,7 @@ wasm_cmd $TF_CONTRACT "$PAYLOAD" "" show_log
 query_contract $TF_CONTRACT '{"get_config":{}}' | jq -r '.data.denoms'
 
 # MINTS TOKENS FROM THE CORE CONTRACT (TF_CONTRACT) VIA THE TEST CONTRACT (TEST_CONTRACT)
-PAYLOAD=$(printf '{"mint_tokens":{"core_factory_address":"%s","to_address":"%s","denoms":[{"denom":"%s","amount":"1"}]}}' $TF_CONTRACT $KEY_ADDR $FULL_DENOM) && echo $PAYLOAD
+PAYLOAD=$(printf '{"mint_tokens":{"core_factory_address":"%s","to_address":"%s","denoms":[{"denom":"%s","amount":"100"}]}}' $TF_CONTRACT $KEY_ADDR $FULL_DENOM) && echo $PAYLOAD
 wasm_cmd $TEST_CONTRACT "$PAYLOAD" "" show_log
 $BINARY q bank balances $KEY_ADDR --output json
 
@@ -111,6 +111,22 @@ query_contract $TF_CONTRACT '{"get_config":{}}' | jq -r '.data.allowed_mint_addr
 PAYLOAD=$(printf '{"remove_whitelist":{"addresses":["%s"]}}' $KEY_ADDR) && echo $PAYLOAD
 wasm_cmd $TF_CONTRACT "$PAYLOAD" "" show_log
 query_contract $TF_CONTRACT '{"get_config":{}}' | jq -r '.data.allowed_mint_addresses'
+
+# force transfer
+PAYLOAD=$(printf '{"force_transfer":{"from":"%s","to":"juno190g5j8aszqhvtg7cprmev8xcxs6csra7xnk3n3","denom":{"denom":"%s","amount":"1"}}}' $KEY_ADDR $FULL_DENOM) && echo $PAYLOAD
+wasm_cmd $TF_CONTRACT "$PAYLOAD" "" show_log
+
+# get balance of community pool
+junod q bank balances juno190g5j8aszqhvtg7cprmev8xcxs6csra7xnk3n3
+
+
+# BURN FROM (from community pool)
+PAYLOAD=$(printf '{"burn_from":{"from":"juno190g5j8aszqhvtg7cprmev8xcxs6csra7xnk3n3","denom":{"denom":"%s","amount":"1"}}}' $FULL_DENOM) && echo $PAYLOAD
+wasm_cmd $TF_CONTRACT "$PAYLOAD" "" show_log
+wasm_cmd $TF_CONTRACT "$PAYLOAD" "" show_log # fails, no more balance for that user
+# get balance of community pool
+junod q bank balances juno190g5j8aszqhvtg7cprmev8xcxs6csra7xnk3n3
+
 
 
 

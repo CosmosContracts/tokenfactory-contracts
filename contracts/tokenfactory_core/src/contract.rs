@@ -61,10 +61,59 @@ pub fn execute(
         // Permissionless
         ExecuteMsg::Burn {} => execute_burn(deps, env, info),
 
+
+        ExecuteMsg::BurnFrom {from, denom} => {
+            let state = STATE.load(deps.storage)?;
+            is_contract_manager(state.clone(), info.sender)?;
+
+            let balance = deps.querier.query_all_balances(from.clone())?;
+            
+            let mut found = false;
+            for coin in balance.iter() {
+                if coin.denom == denom.denom {
+                    found = true;
+                }
+            }
+
+            if !found {
+                return Err(ContractError::InvalidDenom {
+                    denom: denom.denom,
+                    message: "Denom not found in balance".to_string(),
+                });
+            }
+
+            // burn from from_address
+            let msg: TokenMsg = TokenMsg::BurnTokens {
+                denom: denom.denom,
+                amount: denom.amount,
+                burn_from_address: from,
+            };
+
+            Ok(Response::new()
+                .add_attribute("method", "execute_burn_from")
+                .add_message(msg))
+        },
+
         // Contract whitelist only
         ExecuteMsg::Mint { address, denom } => execute_mint(deps, info, address, denom),
         ExecuteMsg::TransferAdmin { denom, new_address } => {
             execute_transfer_admin(deps, info, denom, new_address)
+        }
+
+        ExecuteMsg::ForceTransfer { from, to, denom } => {
+            let state = STATE.load(deps.storage)?;
+            is_contract_manager(state.clone(), info.sender)?;
+
+            let msg: TokenMsg = TokenMsg::ForceTransfer {
+                denom: denom.denom,
+                amount: denom.amount,
+                from_address: from,
+                to_address: to,
+            };            
+
+            Ok(Response::new()
+                .add_attribute("method", "force_transfer")
+                .add_message(msg))
         }
 
         // Contract manager only
@@ -153,7 +202,7 @@ pub fn execute_transfer_admin(
     let state_denom: Option<&String> = state.denoms.iter().find(|d| d.to_string() == denom);
 
     if state_denom.is_some() {
-        // remove it from state        
+        // remove it from state
         let updated_state: Vec<String> = state
             .denoms
             .iter()
