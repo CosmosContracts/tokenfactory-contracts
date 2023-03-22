@@ -932,7 +932,7 @@ dependencies = [
 [[package]]
 name = "token-bindings"
 version = "0.9.0"
-source = "git+https://github.com/CosmosContracts/token-bindings?branch=reece/force_transfer#4acf582aaf98732bcfd4821d0bbf45faf6c479dc"
+source = "git+https://github.com/CosmosContracts/token-bindings?branch=main#1412b9498347c3e2a1f80fd106fffd9cec697ca0"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
