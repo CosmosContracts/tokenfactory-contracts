@@ -9,14 +9,14 @@ function stop_docker {
 }
 
 function start_docker {
-    IMAGE_TAG=${2:-"13.0.0-beta"}
+    IMAGE_TAG=${IMAGE_TAG:-"13.0.0-beta"}
     BLOCK_GAS_LIMIT=${GAS_LIMIT:-10000000} # mirrors mainnet
 
     echo "Building $IMAGE_TAG"
     echo "Configured Block Gas Limit: $BLOCK_GAS_LIMIT"
 
     stop_docker    
-
+    
     # run junod docker
     docker run --rm -d --name $CONTAINER_NAME \
         -e STAKE_TOKEN=$DENOM \
@@ -25,7 +25,7 @@ function start_docker {
         -e TIMEOUT_COMMIT="500ms" \
         -p 1317:1317 -p 26656:26656 -p 26657:26657 \
         --mount type=volume,source=junod_data,target=/root \
-        ghcr.io/cosmoscontracts/juno:$IMAGE_TAG /opt/setup_and_run.sh $KEY_ADDR    
+        ghcr.io/cosmoscontracts/juno-e2e:$IMAGE_TAG /opt/setup_and_run.sh $KEY_ADDR    
 }
 
 function compile_and_copy {    
