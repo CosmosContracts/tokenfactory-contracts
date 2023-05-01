@@ -7,7 +7,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v4/chain/cosmos"
 )
 
-func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, keyname string, fileLoc string, message string) (contract string) {
+func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, keyname string, fileLoc string, message string) (codeId, contract string) {
 	codeId, err := chain.StoreContract(ctx, keyname, fileLoc)
 	if err != nil {
 		t.Fatal(err)
@@ -20,5 +20,5 @@ func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 	}
 	// t.Log(contractAddr)
 
-	return contractAddr
+	return codeId, contractAddr
 }

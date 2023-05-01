@@ -33,7 +33,7 @@ func TestBasicContract(t *testing.T) {
 
 	// NEW CONTRACTS HERE:
 	cw20Msg := fmt.Sprintf(`{"name":"test","symbol":"aaaa","decimals":6,"initial_balances":[{"address":"%s","amount":"100"}]}`, uaddr)
-	cw20ContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../base_artifacts/cw20_base.wasm", cw20Msg)
+	_, cw20ContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../base_artifacts/cw20_base.wasm", cw20Msg)
 
 	tfDenom := helpers.CreateTokenFactoryDenom(t, ctx, juno, user, "testdenom")
 
@@ -47,12 +47,12 @@ func TestBasicContract(t *testing.T) {
 
 	// Setup Tokenfactory Core contract (mints on your/daos behalf)
 	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"denoms":["%s"]}`, tfDenom)
-	tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
+	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
 	t.Log("tfCoreContractAddr", tfCoreContractAddr)
 
 	// Setup the migration contract (convert a cw20 to a native denom (ex: ibc, native, or factory))
 	migrateCW20Msg := fmt.Sprintf(`{"cw20_token_address":"%s","contract_minter_address":"%s","tf_denom":"%s"}`, cw20ContractAddr, tfCoreContractAddr, tfDenom)
-	cw20MigrateContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/migrate.wasm", migrateCW20Msg)
+	_, cw20MigrateContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/migrate.wasm", migrateCW20Msg)
 
 	// TODO: native migrate (ujuno -> tf denom. from IBC, native, or factory conversions to TF denom)
 
