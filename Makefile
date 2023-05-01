@@ -10,5 +10,6 @@ clippy:
 test:	
 	cargo test -- --nocapture
 
-e2e-test:
-	sh ./e2e/test_e2e.sh
+ictest-basic:
+	cd test/strangelove && go test -race -v -run TestBasicContract .
+
