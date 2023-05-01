@@ -72,6 +72,7 @@ func TransferTokenFactoryAdmin(t *testing.T, ctx context.Context, chain *cosmos.
 	require.NoError(t, err)
 }
 
+// Getters
 func GetTokenFactoryAdmin(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, fullDenom string) string {
 	// $BINARY q tokenfactory denom-authority-metadata $FULL_DENOM
 

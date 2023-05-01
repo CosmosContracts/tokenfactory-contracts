@@ -18,7 +18,7 @@ func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(contractAddr)
+	// t.Log(contractAddr)
 
 	return contractAddr
 }

@@ -5,28 +5,27 @@ package test
 
 // EntryPoint
 type QueryMsg struct {
-	GetEntries   *GetEntries `json:"get_entries,omitempty"`
-	GetWhitelist *struct{}   `json:"get_whitelist,omitempty"`
+	// GetEntries   *GetEntries `json:"get_entries,omitempty"`
+	GetConfig *struct{} `json:"get_config,omitempty"`
 }
 
 // Response Types (json is always 'data' from the chain return value)
-type JournalEntriesResponse struct {
-	Data map[string]JournalEntry `json:"data"`
+type GetConfigResponse struct {
+	Data *ConfigTfCore `json:"data"`
 }
 
-type WhitelistResponse struct {
-	Data []string `json:"data"`
-}
+// type WhitelistResponse struct {
+// 	Data []string `json:"data"`
+// }
 
-// Middleware
-type GetEntries struct {
-	Address string `json:"address"`
-}
+// // Middleware
+// type GetEntries struct {
+// 	Address string `json:"address"`
+// }
 
 // Base Data Types
-type JournalEntry struct {
-	Date   string `json:"date"`
-	Title  string `json:"title"`
-	RepoPr string `json:"repo_pr"`
-	Notes  string `json:"notes"`
+type ConfigTfCore struct {
+	Manager              string   `json:"manager"`
+	AllowedMintAddresses []string `json:"allowed_mint_addresses"`
+	Denoms               []string `json:"denoms"`
 }
