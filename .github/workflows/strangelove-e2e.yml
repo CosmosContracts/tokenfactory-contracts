@@ -27,17 +27,7 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
   
-      # Install depends (Can't cache docker image builds unless there is a cosmwasm/workspace-optimizer workflow)
-      # - name: Rust Dependencies Cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       ~/.cargo/registry/index/
-      #       ~/.cargo/registry/cache/
-      #       ~/.cargo/git/db/
-      #       target/
-      #       artifacts/
-      #     key: ${{ runner.os }}-cargo-with-artifacts-${{ hashFiles('**/Cargo.lock') }}      
+      # TODO can we cache cosmwasm workspace-optimizer crate.io deps? or does that need its own github ci build   
       
       - name: Build the artifact
         run: make compile
