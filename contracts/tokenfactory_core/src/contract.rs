@@ -1,7 +1,8 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, BankMsg, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    to_binary, AllBalanceResponse, BalanceResponse, BankMsg, BankQuery, Binary, Coin, Deps,
+    DepsMut, Env, MessageInfo, Response, StdResult,
 };
 use cw2::set_contract_version;
 
@@ -61,13 +62,12 @@ pub fn execute(
         // Permissionless
         ExecuteMsg::Burn {} => execute_burn(deps, env, info),
 
-
-        ExecuteMsg::BurnFrom {from, denom} => {
+        ExecuteMsg::BurnFrom { from, denom } => {
             let state = STATE.load(deps.storage)?;
             is_contract_manager(state.clone(), info.sender)?;
 
             let balance = deps.querier.query_all_balances(from.clone())?;
-            
+
             let mut found = false;
             for coin in balance.iter() {
                 if coin.denom == denom.denom {
@@ -92,7 +92,7 @@ pub fn execute(
             Ok(Response::new()
                 .add_attribute("method", "execute_burn_from")
                 .add_message(msg))
-        },
+        }
 
         // Contract whitelist only
         ExecuteMsg::Mint { address, denom } => execute_mint(deps, info, address, denom),
@@ -109,7 +109,7 @@ pub fn execute(
                 amount: denom.amount,
                 from_address: from,
                 to_address: to,
-            };            
+            };
 
             Ok(Response::new()
                 .add_attribute("method", "force_transfer")
@@ -290,6 +290,20 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetConfig {} => {
             let state = STATE.load(deps.storage)?;
             to_binary(&state)
+        }
+        QueryMsg::GetBalance { address, denom } => {
+            let v = BankQuery::Balance { address, denom };
+            let res: BalanceResponse = deps.querier.query(&v.into())?;
+            to_binary(&res.amount)
+        }
+
+        // Since RPC's do not like to return factory/ denoms. We allow that through this query
+        QueryMsg::GetAllBalances { address } => {
+            let v = BankQuery::AllBalances { address };
+
+            let res: AllBalanceResponse = deps.querier.query(&v.into())?;
+
+            to_binary(&res.amount)
         }
     }
 }
