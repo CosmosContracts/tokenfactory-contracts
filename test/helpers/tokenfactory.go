@@ -55,8 +55,8 @@ func MintTokenFactoryDenom(t *testing.T, ctx context.Context, chain *cosmos.Cosm
 	err = testutil.WaitForBlocks(ctx, 2, chain)
 	require.NoError(t, err)
 }
-func TransferTokenFactoryAdmin(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, currentAdmin *ibc.Wallet, newAdmin *ibc.Wallet, fullDenom string) {
-	cmd := []string{"junod", "tx", "tokenfactory", "change-admin", fullDenom, newAdmin.Bech32Address(CHAIN_PREFIX),
+func TransferTokenFactoryAdmin(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, currentAdmin *ibc.Wallet, newAdminBech32 string, fullDenom string) {
+	cmd := []string{"junod", "tx", "tokenfactory", "change-admin", fullDenom, newAdminBech32,
 		"--node", chain.GetRPCAddress(),
 		"--home", chain.HomeDir(),
 		"--chain-id", chain.Config().ChainID,
