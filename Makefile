@@ -10,5 +10,12 @@ clippy:
 test:	
 	cargo test -- --nocapture
 
-e2e-test:
-	sh ./e2e/test_e2e.sh
+ictest-basic:
+	cd test/interchaintest && go test -race -v -run TestBasicContract .
+
+ictest-conversion-cw20:
+	cd test/interchaintest && go test -race -v -run TestCw20ConversionMigrateContract .
+	
+ictest-conversion-native:
+	cd test/interchaintest && go test -race -v -run TestNativeConversionMigrateContract .
+
