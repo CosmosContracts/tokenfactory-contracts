@@ -6,7 +6,17 @@ import (
 
 	"github.com/strangelove-ventures/interchaintest/v4/chain/cosmos"
 	"github.com/stretchr/testify/require"
+	"gotest.tools/assert"
 )
+
+func CheckBalance(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, address, tfDenom string, amount int64) {
+	if bal, err := chain.GetBalance(ctx, address, tfDenom); err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log(address, "balance:", bal)
+		assert.Equal(t, bal, amount)
+	}
+}
 
 func GetContractConfig(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, contract string, uaddr string) GetConfigResponse {
 	// tokenfactory_core/src/state.rs

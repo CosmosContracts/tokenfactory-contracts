@@ -1,7 +1,6 @@
 package test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -55,7 +54,7 @@ func TestBasicContract(t *testing.T) {
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
 
 	// BALANCES
-	checkBalance(t, ctx, juno, uaddr, tfDenom, 100)
+	CheckBalance(t, ctx, juno, uaddr, tfDenom, 100)
 	// do the same thing but through the TF contract query
 	balRes := GetCoreContractUserBalance(t, ctx, juno, tfCoreContractAddr, uaddr, tfDenom)
 	assert.Equal(t, balRes.Data.Amount, "100")
@@ -87,11 +86,11 @@ func TestBasicContract(t *testing.T) {
 	// '{"force_transfer":{"from":"%s","to":"juno190g5j8aszqhvtg7cprmev8xcxs6csra7xnk3n3","denom":{"denom":"%s","amount":"1"}}}' $KEY_ADDR $FULL_DENOM
 	msg = fmt.Sprintf(`{"force_transfer":{"from":"%s","to":"%s","denom":{"denom":"%s","amount":"3"}}}`, uaddr, uaddr2, tfDenom)
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
-	checkBalance(t, ctx, juno, uaddr2, tfDenom, 3)
+	CheckBalance(t, ctx, juno, uaddr2, tfDenom, 3)
 
 	msg = fmt.Sprintf(`{"burn_from":{"from":"%s","denom":{"denom":"%s","amount":"1"}}}`, uaddr2, tfDenom)
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
-	checkBalance(t, ctx, juno, uaddr2, tfDenom, 2)
+	CheckBalance(t, ctx, juno, uaddr2, tfDenom, 2)
 
 	// mint a token as user2 to user2 addr
 
@@ -124,13 +123,4 @@ func TestBasicContract(t *testing.T) {
 	t.Cleanup(func() {
 		_ = ic.Close()
 	})
-}
-
-func checkBalance(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, address, tfDenom string, amount int64) {
-	if bal, err := chain.GetBalance(ctx, address, tfDenom); err != nil {
-		t.Fatal(err)
-	} else {
-		t.Log(address, "balance:", bal)
-		assert.Equal(t, bal, amount)
-	}
 }

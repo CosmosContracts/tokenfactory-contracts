@@ -18,25 +18,7 @@ TX_FLAGS="--gas-prices 0.1$DENOM --gas-prices="0ujunox" --gas 5000000 -y -b bloc
 export JUNOD_COMMAND_ARGS="$TX_FLAGS --from test-user"
 export KEY_ADDR="juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl"
 
-MAIN_REPO_RAW_ARTIFACTS="https://github.com/CosmosContracts/tokenfactory-contracts/raw/main/artifacts"
 
-function create_denom {
-    RANDOM_STRING=$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w 6 | head -n 1)
-
-    $BINARY tx tokenfactory create-denom $RANDOM_STRING $JUNOD_COMMAND_ARGS    
-    export FULL_DENOM="factory/$KEY_ADDR/$RANDOM_STRING" && echo $FULL_DENOM
-}
-
-function transfer_denom_to_middleware_contract {
-    # transfer admin to the contract from the user (this way the contract can mint factory denoms)
-    $BINARY tx tokenfactory change-admin $FULL_DENOM $TF_CONTRACT $JUNOD_COMMAND_ARGS
-    $BINARY q tokenfactory denom-authority-metadata $FULL_DENOM # admin is the TF_CONTRACT
-}
-
-function download_latest {
-    # download latest core contract from public repo, gets uploaded to the docker container
-    wget -O e2e/migrate/tokenfactory_core.wasm "$MAIN_REPO_RAW_ARTIFACTS/tokenfactory_core.wasm"
-}
 
 # ========================
 # ===   Core Uploads   ===

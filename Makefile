@@ -13,3 +13,7 @@ test:
 ictest-basic:
 	cd test/interchaintest && go test -race -v -run TestBasicContract .
 
+
+ictest-conversion:
+	cd test/interchaintest && go test -race -v -run TestConversionMigrateContract .
+

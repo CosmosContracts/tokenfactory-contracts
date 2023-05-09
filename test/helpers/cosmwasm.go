@@ -22,3 +22,8 @@ func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 
 	return codeId, contractAddr
 }
+
+// func CW20Message(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user *ibc.Wallet, cw20ContractAddr, actionContractAddr, amount, message string) {
+// 	msg := fmt.Sprintf(`{"send":{"contract":"%s","amount":"%s","msg":"%s"}}`, actionContractAddr, amount, b64.StdEncoding.EncodeToString([]byte(message)))
+// 	txHash, _ := chain.ExecuteContract(ctx, user.KeyName, cw20ContractAddr, msg)
+// }

@@ -9,7 +9,6 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	feesharetypes "github.com/CosmosContracts/juno/v14/x/feeshare/types"
 
-	// Cosmos-SDK simapp
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 
 	"github.com/docker/docker/client"
@@ -45,7 +44,7 @@ func CreateBaseChain(t *testing.T) []ibc.Chain {
 			ChainName: "juno1",
 			ChainConfig: ibc.ChainConfig{
 				GasPrices:      "0ujuno",
-				GasAdjustment:  2.0,
+				GasAdjustment:  5.0,
 				EncodingConfig: junoEncoding(),
 			},
 			NumValidators: &numVals,
