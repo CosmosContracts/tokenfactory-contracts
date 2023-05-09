@@ -11,5 +11,5 @@ test:
 	cargo test -- --nocapture
 
 ictest-basic:
-	cd test/strangelove && go test -race -v -run TestBasicContract .
+	cd test/interchaintest && go test -race -v -run TestBasicContract .
 
