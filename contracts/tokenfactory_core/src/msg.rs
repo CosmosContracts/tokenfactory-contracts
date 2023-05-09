@@ -12,6 +12,7 @@ pub struct InstantiateMsg {
     pub denoms: Vec<String>, // ex: factory/juno1xxx/test
 }
 
+use cosmwasm_std::Coin;
 pub use tokenfactory_types::msg::ExecuteMsg;
 
 #[cw_serde]
@@ -19,6 +20,10 @@ pub use tokenfactory_types::msg::ExecuteMsg;
 pub enum QueryMsg {
     #[returns(crate::state::Config)]
     GetConfig {},
-    // #[returns(Vec<Denom>)]
-    // GetDenoms {},
+
+    #[returns(Coin)]
+    GetBalance { address: String, denom: String },
+
+    #[returns(Vec<Coin>)]
+    GetAllBalances { address: String },
 }
