@@ -1,13 +1,11 @@
 package test
 
 import (
-	b64 "encoding/base64"
 	"fmt"
 	"testing"
 
 	"github.com/strangelove-ventures/interchaintest/v4"
 	"github.com/strangelove-ventures/interchaintest/v4/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v4/testutil"
 	"gotest.tools/assert"
 
 	helpers "github.com/CosmosContracts/tokenfactory-contracts/helpers"
@@ -15,7 +13,7 @@ import (
 
 // This test ensures the basic contract logic works (bindings mostly & transfers)
 // Actual contract logic checks are handled in the TestMigrateContract test
-func TestConversionMigrateContract(t *testing.T) {
+func TestCw20ConversionMigrateContract(t *testing.T) {
 	t.Parallel()
 
 	// Create chain factory with Juno
@@ -66,14 +64,14 @@ func TestConversionMigrateContract(t *testing.T) {
 	CheckBalance(t, ctx, juno, uaddr, tfDenom, 0)
 
 	// send the message through CW20 -> migrate conversion contract.
-	msg = fmt.Sprintf(`{"send":{"contract":"%s","amount":"%s","msg":"%s"}}`, cw20MigrateContractAddr, "5", b64.StdEncoding.EncodeToString([]byte(`{"receive":{}}`)))
-	txHash, _ := juno.ExecuteContract(ctx, user.KeyName, cw20ContractAddr, msg)
+	// msg = fmt.Sprintf(`{"send":{"contract":"%s","amount":"%s","msg":"%s"}}`, cw20MigrateContractAddr, "5", b64.StdEncoding.EncodeToString([]byte(`{"receive":{}}`)))
+	// txHash, _ := juno.ExecuteContract(ctx, user.KeyName, cw20ContractAddr, msg)
+	helpers.CW20Message(t, ctx, juno, user, cw20ContractAddr, cw20MigrateContractAddr, "5", `{"receive":{}}`)
 
-	t.Log(txHash)
+	// t.Log(txHash)
 
-	// gas issue still?
-	t.Log("GetHostRPCAddress", juno.GetHostRPCAddress())
-	testutil.WaitForBlocks(ctx, 20_000, juno)
+	// t.Log("GetHostRPCAddress", juno.GetHostRPCAddress())
+	// testutil.WaitForBlocks(ctx, 20_000, juno)
 
 	// we should now have 5 balance of the tf denom
 	CheckBalance(t, ctx, juno, uaddr, tfDenom, 5)
