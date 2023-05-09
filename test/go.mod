@@ -24,6 +24,7 @@ require (
 	github.com/strangelove-ventures/interchaintest/v4 v4.0.0-20230301185707-668fe0ea8377
 	github.com/stretchr/testify v1.8.2
 	go.uber.org/zap v1.23.0
+	gotest.tools v2.2.0+incompatible
 )
 
 require (
