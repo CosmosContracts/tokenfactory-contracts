@@ -69,23 +69,23 @@ function upload_tokenfactory_core {
 
 # === COPY ALL ABOVE TO SET ENVIROMENT UP LOCALLY ====
 
-
-
 # =============
 # === LOGIC ===
 # =============
 
-IMAGE_TAG="reece-updated-tf-v14" start_docker
+IMAGE_TAG="v14.1.0" start_docker
 add_accounts
 compile_and_copy # the compile takes time for the docker container to start up
 
 # upload test contract
 upload_testing_contract
 upload_tokenfactory_core # TF_CONTRACT=juno1
+# juno1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrq68ev2p
 
 
 # == INITIAL TEST ==
 query_contract $TF_CONTRACT '{"get_config":{}}' | jq -r '.data'
+
 # add denom
 create_denom && transfer_denom_to_contract
 
@@ -97,6 +97,9 @@ query_contract $TF_CONTRACT '{"get_config":{}}' | jq -r '.data.denoms'
 PAYLOAD=$(printf '{"mint_tokens":{"core_factory_address":"%s","to_address":"%s","denoms":[{"denom":"%s","amount":"100"}]}}' $TF_CONTRACT $KEY_ADDR $FULL_DENOM) && echo $PAYLOAD
 wasm_cmd $TEST_CONTRACT "$PAYLOAD" "" show_log
 $BINARY q bank balances $KEY_ADDR --output json
+
+query_contract $TF_CONTRACT '{"get_all_balances":{"address":"juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl"}}' | jq -r '.data'
+query_contract $TF_CONTRACT '{"get_balance":{"address":"juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl","denom":"factory/juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl/RcqfWz"}}' | jq -r '.data'
 
 # TODO: only allow denoms which the contract is the admin of? (query denom-authority-metadata)
 
