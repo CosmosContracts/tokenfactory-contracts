@@ -11,8 +11,6 @@ import (
 	helpers "github.com/CosmosContracts/tokenfactory-contracts/helpers"
 )
 
-// This test ensures the basic contract logic works (bindings mostly & transfers)
-// Actual contract logic checks are handled in the TestMigrateContract test
 func TestCw20ConversionMigrateContract(t *testing.T) {
 	t.Parallel()
 

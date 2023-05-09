@@ -9,11 +9,11 @@ import (
 	"gotest.tools/assert"
 )
 
-func CheckBalance(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, address, tfDenom string, amount int64) {
-	if bal, err := chain.GetBalance(ctx, address, tfDenom); err != nil {
+func CheckBalance(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, address, denom string, amount int64) {
+	if bal, err := chain.GetBalance(ctx, address, denom); err != nil {
 		t.Fatal(err)
 	} else {
-		t.Log(address, "balance:", bal)
+		t.Log(address, "balance:", bal, denom)
 		assert.Equal(t, bal, amount)
 	}
 }

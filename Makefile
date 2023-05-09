@@ -13,7 +13,9 @@ test:
 ictest-basic:
 	cd test/interchaintest && go test -race -v -run TestBasicContract .
 
-
-ictest-conversion:
+ictest-conversion-cw20:
 	cd test/interchaintest && go test -race -v -run TestCw20ConversionMigrateContract .
+	
+ictest-conversion-native:
+	cd test/interchaintest && go test -race -v -run TestNativeConversionMigrateContract .
 
