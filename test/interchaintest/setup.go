@@ -40,7 +40,7 @@ func CreateBaseChain(t *testing.T) []ibc.Chain {
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		{
 			Name:      "juno",
-			Version:   "latest",
+			Version:   "v15.0.0",
 			ChainName: "juno1",
 			ChainConfig: ibc.ChainConfig{
 				GasPrices:      "0ujuno",

@@ -36,8 +36,8 @@ func TestBasicContract(t *testing.T) {
 	assert.Equal(t, uaddr, denomAdmin)
 
 	// Setup TokenFactory Core contract (mints on your/daos behalf) where uaddr can mint for anyone
-	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":["%s"],"denoms":["%s"]}`, uaddr, tfDenom)
-	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
+	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":["%s"],"existing_denoms":["%s"]}`, uaddr, tfDenom)
+	tfCoreCodeId, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
 
 	assert.Assert(t, len(tfCoreContractAddr) > 0)
 	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
@@ -114,6 +114,32 @@ func TestBasicContract(t *testing.T) {
 
 	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
 	assert.Assert(t, len(res.Data.Denoms) == 0)
+
+	// Create denom on instantiation
+	tfCoreCreateMsg := fmt.Sprintf(`{"allowed_mint_addresses":["%s"],"new_denoms":[{"name":"Create Me","description":"I am created on instantiation","symbol":"CRT","decimals":6,"initial_balances":[{"address":"%s","amount":"420"}]}]}`, uaddr, uaddr)
+	tfCoreCreateAddr, err := juno.InstantiateContract(ctx, user.KeyName, tfCoreCodeId, tfCoreCreateMsg, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tfCreatedDenom := fmt.Sprintf(`factory/%s/crt`, tfCoreCreateAddr)
+
+	res = GetContractConfig(t, ctx, juno, tfCoreCreateAddr, uaddr)
+	assert.Equal(t, len(res.Data.Denoms), 1)
+	assert.Equal(t, res.Data.Denoms[0], tfCreatedDenom)
+
+	// Validate admin.
+	createdDenomAdmin := helpers.GetTokenFactoryAdmin(t, ctx, juno, tfCreatedDenom)
+	assert.Equal(t, tfCoreCreateAddr, createdDenomAdmin)
+
+	// Validate initial balances.
+	CheckBalance(t, ctx, juno, uaddr, tfCreatedDenom, 420)
+	// do the same thing but through the TF contract query
+	createdBalRes := GetCoreContractUserBalance(t, ctx, juno, tfCoreCreateAddr, uaddr, tfCreatedDenom)
+	assert.Equal(t, createdBalRes.Data.Amount, "420")
+	// Validate supply.
+	createdSupply := helpers.GetTokenFactorySupply(t, ctx, juno, tfCreatedDenom)
+	assert.Equal(t, createdSupply, "420")
 
 	// !important: debugging
 	// t.Log("GetHostRPCAddress", juno.GetHostRPCAddress())

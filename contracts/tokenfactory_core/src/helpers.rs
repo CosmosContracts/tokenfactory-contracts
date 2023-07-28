@@ -12,8 +12,8 @@ pub fn is_whitelisted(state: Config, sender: Addr) -> Result<(), ContractError> 
     Ok(())
 }
 
-pub fn is_contract_manager(state: Config, sender: Addr) -> Result<(), ContractError> {
-    if !state.manager.eq(&sender.to_string()) {
+pub fn is_contract_manager(config: Config, sender: Addr) -> Result<(), ContractError> {
+    if !config.manager.eq(&sender.to_string()) {
         return Err(ContractError::Unauthorized {});
     }
     Ok(())

@@ -40,7 +40,7 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 	assert.Equal(t, uaddr, helpers.GetTokenFactoryAdmin(t, ctx, juno, tfDenom))
 
 	// Tokenfactory Core minter
-	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"denoms":["%s"]}`, tfDenom)
+	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"existing_denoms":["%s"]}`, tfDenom)
 	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
 
 	// transfer admin to the contract
