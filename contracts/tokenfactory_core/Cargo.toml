@@ -44,7 +44,7 @@ cosmwasm-schema = "1.1"
 cosmwasm-std = "1.1"
 cosmwasm-storage = "1.1"
 cw-storage-plus = "1.0.0"
-token-bindings = { git = "https://github.com/CosmosContracts/token-bindings", branch = "main"}
+token-bindings = "0.10.2"
 cw2 = "1.0.0"
 schemars = "0.8"
 serde = { version = "1.0", default-features = false, features = ["derive"] }

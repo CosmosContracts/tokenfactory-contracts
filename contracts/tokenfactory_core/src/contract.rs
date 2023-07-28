@@ -13,7 +13,7 @@ use crate::helpers::{
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{Config, STATE};
 
-use token_bindings::{TokenFactoryMsg, TokenMsg};
+use token_bindings::{DenomUnit, Metadata, TokenFactoryMsg, TokenMsg};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:tokenfactory-core";
@@ -22,18 +22,79 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     _info: MessageInfo,
     msg: InstantiateMsg,
-) -> Result<Response, ContractError> {
+) -> Result<Response<TokenFactoryMsg>, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    for d in msg.denoms.iter() {
+    // Validate existing denoms.
+    let mut denoms = msg.existing_denoms.unwrap_or_default();
+    for d in denoms.iter() {
         if !d.starts_with("factory/") {
             return Err(ContractError::InvalidDenom {
                 denom: d.clone(),
                 message: "Denom must start with 'factory/'".to_string(),
             });
+        }
+    }
+
+    // Create new denoms.
+    let mut new_denom_msgs: Vec<TokenMsg> = vec![];
+    if let Some(new_denoms) = msg.new_denoms {
+        if !new_denoms.is_empty() {
+            for denom in new_denoms {
+                let subdenom = denom.symbol.to_lowercase();
+                let symbol = denom.symbol.to_uppercase();
+                let full_denom = format!("factory/{}/{}", env.contract.address, subdenom);
+
+                // Add creation message.
+                new_denom_msgs.push(TokenMsg::CreateDenom {
+                    subdenom: subdenom.clone(),
+                    metadata: Some(Metadata {
+                        name: Some(denom.name),
+                        description: denom.description,
+                        denom_units: vec![
+                            DenomUnit {
+                                denom: full_denom.clone(),
+                                exponent: 0,
+                                aliases: vec![],
+                            },
+                            DenomUnit {
+                                denom: symbol.clone(),
+                                exponent: denom.decimals,
+                                aliases: vec![],
+                            },
+                        ],
+                        base: Some(full_denom.clone()),
+                        display: Some(symbol.clone()),
+                        symbol: Some(symbol),
+                    }),
+                });
+                // Add initial balance mint messages.
+                if let Some(initial_balances) = denom.initial_balances {
+                    if !initial_balances.is_empty() {
+                        // Validate addresses.
+                        for initial in initial_balances.iter() {
+                            deps.api.addr_validate(&initial.address)?;
+                        }
+
+                        new_denom_msgs.append(
+                            &mut initial_balances
+                                .iter()
+                                .map(|b| TokenMsg::MintTokens {
+                                    denom: full_denom.clone(),
+                                    amount: b.amount,
+                                    mint_to_address: b.address.clone(),
+                                })
+                                .collect(),
+                        );
+                    }
+                }
+
+                // Add to existing denoms.
+                denoms.push(full_denom);
+            }
         }
     }
 
@@ -44,11 +105,13 @@ pub fn instantiate(
     let config = Config {
         manager: manager.to_string(),
         allowed_mint_addresses: msg.allowed_mint_addresses,
-        denoms: msg.denoms,
+        denoms,
     };
     STATE.save(deps.storage, &config)?;
 
-    Ok(Response::new().add_attribute("method", "instantiate"))
+    Ok(Response::new()
+        .add_attribute("method", "instantiate")
+        .add_messages(new_denom_msgs))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -64,7 +127,7 @@ pub fn execute(
 
         ExecuteMsg::BurnFrom { from, denom } => {
             let state = STATE.load(deps.storage)?;
-            is_contract_manager(state.clone(), info.sender)?;
+            is_contract_manager(state, info.sender)?;
 
             let balance = deps.querier.query_all_balances(from.clone())?;
 
@@ -102,7 +165,7 @@ pub fn execute(
 
         ExecuteMsg::ForceTransfer { from, to, denom } => {
             let state = STATE.load(deps.storage)?;
-            is_contract_manager(state.clone(), info.sender)?;
+            is_contract_manager(state, info.sender)?;
 
             let msg: TokenMsg = TokenMsg::ForceTransfer {
                 denom: denom.denom,
@@ -201,12 +264,12 @@ pub fn execute_transfer_admin(
     // it is possible to transfer admin in without adding to contract state. So devs need a way to reclaim admin without adding it to denoms state
     let state_denom: Option<&String> = state.denoms.iter().find(|d| d.to_string() == denom);
 
-    if state_denom.is_some() {
+    if let Some(state_denom) = state_denom {
         // remove it from state
         let updated_state: Vec<String> = state
             .denoms
             .iter()
-            .filter(|d| d.to_string() != *state_denom.unwrap())
+            .filter(|d| d.to_string() != *state_denom)
             .map(|d| d.to_string())
             .collect();
 
