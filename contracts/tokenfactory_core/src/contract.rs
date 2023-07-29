@@ -8,12 +8,12 @@ use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::helpers::{
-    is_contract_manager, is_whitelisted, mint_factory_token_messages, pretty_denoms_output,
+    is_contract_manager, is_whitelisted, mint_factory_token_messages, pretty_denoms_output, create_denom_msg, mint_tokens_msg,
 };
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{Config, CONFIG};
 
-use token_bindings::{DenomUnit, Metadata, TokenFactoryMsg, TokenMsg};
+use token_bindings::{TokenFactoryMsg, TokenMsg};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:tokenfactory-core";
@@ -41,6 +41,8 @@ pub fn instantiate(
 
     // Create new denoms.
     let mut new_denom_msgs: Vec<TokenMsg> = vec![];
+    let mut new_mint_msgs: Vec<TokenMsg> = vec![];
+    
     if let Some(new_denoms) = msg.new_denoms {
         if !new_denoms.is_empty() {
             for denom in new_denoms {
@@ -48,28 +50,9 @@ pub fn instantiate(
                 let full_denom = format!("factory/{}/{}", env.contract.address, subdenom);
 
                 // Add creation message.
-                new_denom_msgs.push(TokenMsg::CreateDenom {
-                    subdenom: subdenom.clone(),
-                    metadata: Some(Metadata {
-                        name: Some(denom.name),
-                        description: denom.description,
-                        denom_units: vec![
-                            DenomUnit {
-                                denom: full_denom.clone(),
-                                exponent: 0,
-                                aliases: vec![],
-                            },
-                            DenomUnit {
-                                denom: denom.symbol.clone(),
-                                exponent: denom.decimals,
-                                aliases: vec![],
-                            },
-                        ],
-                        base: Some(full_denom.clone()),
-                        display: Some(denom.symbol.clone()),
-                        symbol: Some(denom.symbol),
-                    }),
-                });
+                new_denom_msgs.push(
+                    create_denom_msg(subdenom.clone(), full_denom.clone(), denom.clone()),
+                );
 
                 // Add initial balance mint messages.
                 if let Some(initial_balances) = denom.initial_balances {
@@ -79,15 +62,9 @@ pub fn instantiate(
                             deps.api.addr_validate(&initial.address)?;
                         }
 
-                        let mut initial_balance_msgs: Vec<TokenMsg> = initial_balances
-                            .iter()
-                            .map(|b| TokenMsg::MintTokens {
-                                denom: full_denom.clone(),
-                                amount: b.amount,
-                                mint_to_address: b.address.clone(),
-                            })
-                            .collect();
-                        new_denom_msgs.append(&mut initial_balance_msgs);
+                        for b in initial_balances {
+                            new_mint_msgs.push(mint_tokens_msg(b.address.clone(), full_denom.clone(), b.amount));
+                        }
                     }
                 }
 
@@ -114,7 +91,8 @@ pub fn instantiate(
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
-        .add_messages(new_denom_msgs))
+        .add_messages(new_denom_msgs)
+        .add_messages(new_mint_msgs))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

@@ -1,7 +1,7 @@
-use cosmwasm_std::{Addr, Coin};
-use token_bindings::TokenMsg;
+use cosmwasm_std::{Addr, Coin, Uint128};
+use token_bindings::{TokenMsg, DenomUnit, Metadata};
 
-use crate::{state::Config, ContractError};
+use crate::{state::Config, ContractError, msg::NewDenom};
 
 pub use tokenfactory_types::msg::ExecuteMsg::Mint;
 
@@ -53,4 +53,38 @@ pub fn pretty_denoms_output(denoms: &[Coin]) -> String {
         .map(|d| format!("{}:{}", d.amount, d.denom))
         .collect::<Vec<String>>()
         .join(", ")
+}
+
+pub fn create_denom_msg(subdenom: String, full_denom: String, denom: NewDenom) -> TokenMsg {
+    TokenMsg::CreateDenom {
+        subdenom: subdenom.clone(),
+        metadata: Some(Metadata {
+            name: Some(denom.name),
+            description: denom.description,
+            denom_units: vec![
+                DenomUnit {
+                    denom: full_denom.clone(),
+                    exponent: 0,
+                    aliases: vec![],
+                },
+                DenomUnit {
+                    denom: denom.symbol.clone(),
+                    exponent: denom.decimals,
+                    aliases: vec![],
+                },
+            ],
+            base: Some(full_denom),
+            display: Some(denom.symbol.clone()),
+            symbol: Some(denom.symbol),
+        }),
+    }
+}
+
+
+pub fn mint_tokens_msg(address: String, denom: String, amount: Uint128) -> TokenMsg {
+    TokenMsg::MintTokens {
+        denom: denom,
+        amount: amount,
+        mint_to_address: address,
+    }
 }
