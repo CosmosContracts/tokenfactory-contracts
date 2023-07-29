@@ -24,7 +24,7 @@ func TestBasicContract(t *testing.T) {
 	juno := chains[0].(*cosmos.CosmosChain)
 
 	// User Setup
-	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", int64(10_000_000), juno, juno)
+	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", int64(100_000_000), juno, juno)
 	user := users[0]
 	uaddr := user.Bech32Address(juno.Config().Bech32Prefix)
 	user2 := users[1]
@@ -43,6 +43,8 @@ func TestBasicContract(t *testing.T) {
 	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 1)
 	assert.Equal(t, res.Data.Denoms[0], tfDenom)
+
+	tfCoreCodeId, err := juno.StoreContract(ctx, user.KeyName, "../../artifacts/tokenfactory_core.wasm")
 
 	// transfer admin to the contract
 	helpers.TransferTokenFactoryAdmin(t, ctx, juno, user, tfCoreContractAddr, tfDenom)
@@ -116,26 +118,30 @@ func TestBasicContract(t *testing.T) {
 	assert.Assert(t, len(res.Data.Denoms) == 0)
 
 	// Create denom on instantiation
-	tfCoreCreateMsg := fmt.Sprintf(`{"allowed_mint_addresses":["%s"],"new_denoms":[{"name":"Create Me","description":"I am created on instantiation","symbol":"CRT","decimals":6,"initial_balances":[{"address":"%s","amount":"420"}]}]}`, uaddr, uaddr)
-	tfCoreCreateAddr, err := juno.InstantiateContract(ctx, user.KeyName, tfCoreCodeId, tfCoreCreateMsg, true)
+	tfMsg := fmt.Sprintf(`{"allowed_mint_addresses":["%s"],"new_denoms":[{"name":"new","description":"desc","symbol":"crt","decimals":6,"initial_balances":[{"address":"%s","amount":"420"}]}]}`, uaddr, uaddr)
+	helpers.InstantiateMsgWithGas(t, ctx, juno, user, tfCoreCodeId, "5000000", "10000000ujuno", tfMsg)
+	tfCoreAddr, err := helpers.GetContractAddress(ctx, juno, tfCoreCodeId)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	tfCreatedDenom := fmt.Sprintf(`factory/%s/crt`, tfCoreCreateAddr)
+	t.Log("tfCoreCreateAddr", tfCoreAddr)
+	t.Log("err", err)
 
-	res = GetContractConfig(t, ctx, juno, tfCoreCreateAddr)
+	tfCreatedDenom := fmt.Sprintf(`factory/%s/crt`, tfCoreAddr)
+
+	res = GetContractConfig(t, ctx, juno, tfCoreAddr)
 	assert.Equal(t, len(res.Data.Denoms), 1)
 	assert.Equal(t, res.Data.Denoms[0], tfCreatedDenom)
 
 	// Validate admin.
 	createdDenomAdmin := helpers.GetTokenFactoryAdmin(t, ctx, juno, tfCreatedDenom)
-	assert.Equal(t, tfCoreCreateAddr, createdDenomAdmin)
+	assert.Equal(t, tfCoreAddr, createdDenomAdmin)
 
 	// Validate initial balances.
 	CheckBalance(t, ctx, juno, uaddr, tfCreatedDenom, 420)
 	// do the same thing but through the TF contract query
-	createdBalRes := GetCoreContractUserBalance(t, ctx, juno, tfCoreCreateAddr, uaddr, tfCreatedDenom)
+	createdBalRes := GetCoreContractUserBalance(t, ctx, juno, tfCoreAddr, uaddr, tfCreatedDenom)
 	assert.Equal(t, createdBalRes.Data.Amount, "420")
 	// Validate supply.
 	createdSupply := helpers.GetTokenFactorySupply(t, ctx, juno, tfCreatedDenom)

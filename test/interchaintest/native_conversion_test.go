@@ -56,7 +56,7 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
 
 	// Ensure the contract config data is set correctly.
-	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
+	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Equal(t, res.Data.AllowedMintAddresses[0], naitveMigrateContractAddr)
 	assert.Equal(t, res.Data.Denoms[0], tfDenom)
 

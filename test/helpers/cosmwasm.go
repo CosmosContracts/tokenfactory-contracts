@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	b64 "encoding/base64"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -27,6 +28,56 @@ func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 	// t.Log(contractAddr)
 
 	return codeId, contractAddr
+}
+
+func InstantiateMsgWithGas(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user *ibc.Wallet, codeId, gas, coinAmt, message string) {
+	// TODO: in the future (SDK v47 with genesis params) change this to not use amount :)
+	cmd := []string{"junod", "tx", "wasm", "instantiate", codeId, message,
+		"--node", chain.GetRPCAddress(),
+		"--home", chain.HomeDir(),
+		"--chain-id", chain.Config().ChainID,
+		"--from", user.KeyName,
+		"--gas", gas,
+		"--amount", coinAmt,
+		"--label", "contract" + codeId,
+		"--keyring-dir", chain.HomeDir(),
+		"--keyring-backend", keyring.BackendTest,
+		"--no-admin",
+		"-y",
+	}
+	stdout, _, err := chain.Exec(ctx, cmd, nil)
+	require.NoError(t, err)
+
+	debugOutput(t, string(stdout))
+
+	if err := testutil.WaitForBlocks(ctx, 2, chain); err != nil {
+		t.Fatal(err)
+	}
+}
+
+type QueryContractResponse struct {
+	Contracts []string `json:"contracts"`
+}
+
+func GetContractAddress(ctx context.Context, chain *cosmos.CosmosChain, codeId string) (string, error) {
+	cmd := []string{"junod", "q", "wasm", "list-contract-by-code", codeId,
+		"--output", "json",
+		"--node", chain.GetRPCAddress(),
+		"--home", chain.HomeDir(),
+		"--chain-id", chain.Config().ChainID,
+	}
+	stdout, _, err := chain.Exec(ctx, cmd, nil)
+	if err != nil {
+		return "", fmt.Errorf("error getting contract address: %w", err)
+	}
+
+	contactsRes := QueryContractResponse{}
+	if err := json.Unmarshal([]byte(stdout), &contactsRes); err != nil {
+		return "", fmt.Errorf("error unmarshalling contract address: %w", err)
+	}
+
+	contractAddress := contactsRes.Contracts[len(contactsRes.Contracts)-1]
+	return contractAddress, nil
 }
 
 func ExecuteMsgWithAmount(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user *ibc.Wallet, contractAddr, amount, message string) {

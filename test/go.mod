@@ -18,7 +18,7 @@ replace (
 require (
 	github.com/CosmWasm/token-factory v0.0.0-00010101000000-000000000000
 	github.com/CosmWasm/wasmd v0.31.0
-	github.com/CosmosContracts/juno/v14 v14.1.0
+	github.com/CosmosContracts/juno/v15 v15.0.0
 	github.com/cosmos/cosmos-sdk v0.46.2
 	github.com/docker/docker v20.10.19+incompatible
 	github.com/strangelove-ventures/interchaintest/v4 v4.0.0-20230301185707-668fe0ea8377
@@ -54,7 +54,7 @@ require (
 	github.com/cosmos/gogoproto v1.4.7 // indirect
 	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/iavl v0.19.5 // indirect
-	github.com/cosmos/ibc-go/v4 v4.3.0 // indirect
+	github.com/cosmos/ibc-go/v4 v4.3.1 // indirect
 	github.com/cosmos/interchain-security v1.0.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.12.2 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect

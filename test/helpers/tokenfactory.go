@@ -23,7 +23,7 @@ type Coin struct {
 const CHAIN_PREFIX = "juno"
 
 func debugOutput(t *testing.T, stdout string) {
-	if false {
+	if true {
 		t.Log(stdout)
 	}
 }

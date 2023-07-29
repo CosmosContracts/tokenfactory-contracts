@@ -7,7 +7,7 @@ import (
 	// Juno types
 	tokenfactorytypes "github.com/CosmWasm/token-factory/x/tokenfactory/types"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	feesharetypes "github.com/CosmosContracts/juno/v14/x/feeshare/types"
+	feesharetypes "github.com/CosmosContracts/juno/v15/x/feeshare/types"
 
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 
