@@ -40,7 +40,7 @@ func TestBasicContract(t *testing.T) {
 	tfCoreCodeId, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
 
 	assert.Assert(t, len(tfCoreContractAddr) > 0)
-	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
+	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 1)
 	assert.Equal(t, res.Data.Denoms[0], tfDenom)
 
@@ -65,21 +65,21 @@ func TestBasicContract(t *testing.T) {
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
 
 	// still is one
-	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
+	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 1)
 
 	// add a diff user
 	msg = fmt.Sprintf(`{"add_whitelist":{"addresses":["%s"]}}`, uaddr2)
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
 
-	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
+	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 2)
 
 	// remove user2 from whitelist
 	msg = fmt.Sprintf(`{"remove_whitelist":{"addresses":["%s"]}}`, uaddr2)
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
 
-	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
+	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 1)
 
 	// force transfer 1 token from user to user2
@@ -105,14 +105,14 @@ func TestBasicContract(t *testing.T) {
 	msg = fmt.Sprintf(`{"add_denom":{"denoms":["%s"]}}`, "randomdenom")
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
 
-	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
+	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.Denoms) == 1)
 
 	// Remove denom
 	msg = fmt.Sprintf(`{"remove_denom":{"denoms":["%s"]}}`, "randomdenom")
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
 
-	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
+	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.Denoms) == 0)
 
 	// Create denom on instantiation
@@ -124,7 +124,7 @@ func TestBasicContract(t *testing.T) {
 
 	tfCreatedDenom := fmt.Sprintf(`factory/%s/crt`, tfCoreCreateAddr)
 
-	res = GetContractConfig(t, ctx, juno, tfCoreCreateAddr, uaddr)
+	res = GetContractConfig(t, ctx, juno, tfCoreCreateAddr)
 	assert.Equal(t, len(res.Data.Denoms), 1)
 	assert.Equal(t, res.Data.Denoms[0], tfCreatedDenom)
 

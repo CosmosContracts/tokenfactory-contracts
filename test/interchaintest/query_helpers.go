@@ -18,7 +18,7 @@ func CheckBalance(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, 
 	}
 }
 
-func GetContractConfig(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, contract string, uaddr string) GetConfigResponse {
+func GetContractConfig(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, contract string) GetConfigResponse {
 	// tokenfactory_core/src/state.rs
 	var cRes GetConfigResponse
 	err := chain.QueryContract(ctx, contract, QueryMsg{GetConfig: &struct{}{}}, &cRes)
