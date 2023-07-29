@@ -8,7 +8,8 @@ use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::helpers::{
-    is_contract_manager, is_whitelisted, mint_factory_token_messages, pretty_denoms_output, create_denom_msg, mint_tokens_msg,
+    create_denom_msg, is_contract_manager, is_whitelisted, mint_factory_token_messages,
+    mint_tokens_msg, pretty_denoms_output,
 };
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{Config, CONFIG};
@@ -42,7 +43,7 @@ pub fn instantiate(
     // Create new denoms.
     let mut new_denom_msgs: Vec<TokenMsg> = vec![];
     let mut new_mint_msgs: Vec<TokenMsg> = vec![];
-    
+
     if let Some(new_denoms) = msg.new_denoms {
         if !new_denoms.is_empty() {
             for denom in new_denoms {
@@ -50,9 +51,11 @@ pub fn instantiate(
                 let full_denom = format!("factory/{}/{}", env.contract.address, subdenom);
 
                 // Add creation message.
-                new_denom_msgs.push(
-                    create_denom_msg(subdenom.clone(), full_denom.clone(), denom.clone()),
-                );
+                new_denom_msgs.push(create_denom_msg(
+                    subdenom.clone(),
+                    full_denom.clone(),
+                    denom.clone(),
+                ));
 
                 // Add initial balance mint messages.
                 if let Some(initial_balances) = denom.initial_balances {
@@ -63,7 +66,11 @@ pub fn instantiate(
                         }
 
                         for b in initial_balances {
-                            new_mint_msgs.push(mint_tokens_msg(b.address.clone(), full_denom.clone(), b.amount));
+                            new_mint_msgs.push(mint_tokens_msg(
+                                b.address.clone(),
+                                full_denom.clone(),
+                                b.amount,
+                            ));
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 use cosmwasm_std::{Addr, Coin, Uint128};
-use token_bindings::{TokenMsg, DenomUnit, Metadata};
+use token_bindings::{DenomUnit, Metadata, TokenMsg};
 
-use crate::{state::Config, ContractError, msg::NewDenom};
+use crate::{msg::NewDenom, state::Config, ContractError};
 
 pub use tokenfactory_types::msg::ExecuteMsg::Mint;
 
@@ -79,7 +79,6 @@ pub fn create_denom_msg(subdenom: String, full_denom: String, denom: NewDenom) -
         }),
     }
 }
-
 
 pub fn mint_tokens_msg(address: String, denom: String, amount: Uint128) -> TokenMsg {
     TokenMsg::MintTokens {
