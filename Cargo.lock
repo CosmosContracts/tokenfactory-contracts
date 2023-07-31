@@ -546,6 +546,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "juno-tokenfactory-core"
+version = "0.0.3"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-multi-test 0.16.5",
+ "cw-storage-plus 1.1.0",
+ "cw2 1.1.0",
+ "juno-tokenfactory-types",
+ "schemars",
+ "serde",
+ "thiserror",
+ "token-bindings 0.10.2",
+]
+
+[[package]]
+name = "juno-tokenfactory-types"
+version = "0.0.1"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "schemars",
+ "serde",
+ "token-bindings 0.10.2",
+]
+
+[[package]]
 name = "k256"
 version = "0.11.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -581,13 +609,13 @@ dependencies = [
  "cw2 1.1.0",
  "cw20",
  "getrandom",
+ "juno-tokenfactory-types",
  "schemars",
  "serde",
  "strum",
  "strum_macros",
  "thiserror",
  "token-bindings-test",
- "tokenfactory-types",
 ]
 
 [[package]]
@@ -878,16 +906,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "tf_example"
+name = "tf-example"
 version = "1.0.0"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",
  "cw-storage-plus 1.1.0",
+ "juno-tokenfactory-types",
  "schemars",
  "thiserror",
- "tokenfactory-types",
 ]
 
 [[package]]
@@ -947,34 +975,6 @@ dependencies = [
  "serde",
  "thiserror",
  "token-bindings 0.8.0",
-]
-
-[[package]]
-name = "tokenfactory-types"
-version = "0.0.1"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "schemars",
- "serde",
- "token-bindings 0.10.2",
-]
-
-[[package]]
-name = "tokenfactory_core"
-version = "0.0.3"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw-multi-test 0.16.5",
- "cw-storage-plus 1.1.0",
- "cw2 1.1.0",
- "schemars",
- "serde",
- "thiserror",
- "token-bindings 0.10.2",
- "tokenfactory-types",
 ]
 
 [[package]]

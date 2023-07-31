@@ -3,7 +3,7 @@ use token_bindings::{DenomUnit, Metadata, TokenMsg};
 
 use crate::{msg::NewDenom, state::Config, ContractError};
 
-pub use tokenfactory_types::msg::ExecuteMsg::Mint;
+pub use juno_tokenfactory_types::msg::ExecuteMsg::Mint;
 
 pub fn is_whitelisted(state: Config, sender: Addr) -> Result<(), ContractError> {
     if !state.allowed_mint_addresses.contains(&sender.to_string()) {

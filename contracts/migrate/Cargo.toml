@@ -55,7 +55,7 @@ strum = "0.24"
 strum_macros = "0.24"
 
 # middleware minting contract
-tokenfactory-types = { path = "../../packages/tokenfactory-types" }
+juno-tokenfactory-types = { path = "../../packages/tokenfactory-types" }
 
 [dev-dependencies]
 cw-multi-test = "0.16.1"

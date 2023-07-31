@@ -1,5 +1,5 @@
 [package]
-name = "tf_example"
+name = "tf-example"
 version = "1.0.0"
 authors = ["Reece <reecepbcups@gmail.com>"]
 edition = "2018"
@@ -47,6 +47,6 @@ cw-storage-plus = "1.0.1"
 schemars = "0.8.11"
 thiserror = "1.0"
 
-tokenfactory-types = { path = "../../packages/tokenfactory-types" }
+juno-tokenfactory-types = { path = "../../packages/tokenfactory-types" }
 # for your contract, use the following:
 # tokenfactory-types = { git = "https://github.com/CosmosContracts/tokenfactory-contracts" }

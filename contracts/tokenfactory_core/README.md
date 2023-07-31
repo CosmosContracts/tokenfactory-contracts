@@ -74,7 +74,7 @@ pub enum ExecuteMsg {
 // contract.rs - execute
 
 // Ensure you added the tokenfactory-types dependency
-use tokenfactory_types::msg::ExecuteMsg::Mint;
+use juno::juno_tokenfactory_types::msg::ExecuteMsg::Mint;
 
 ExecuteMsg::MintTokens {
     core_tf_middleware_contract,

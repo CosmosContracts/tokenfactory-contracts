@@ -1,5 +1,5 @@
 use cosmwasm_schema::write_api;
-use tokenfactory_core::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use juno_tokenfactory_core::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 fn main() {
     write_api! {

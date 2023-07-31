@@ -6,7 +6,7 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
-use tokenfactory_types::msg::ExecuteMsg::Mint;
+use juno_tokenfactory_types::msg::ExecuteMsg::Mint;
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, GetConfig, InstantiateMsg, QueryMsg};

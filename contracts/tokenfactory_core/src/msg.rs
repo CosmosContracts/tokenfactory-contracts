@@ -29,7 +29,7 @@ pub struct InitialBalance {
 }
 
 use cosmwasm_std::{Coin, Uint128};
-pub use tokenfactory_types::msg::ExecuteMsg;
+pub use juno_tokenfactory_types::msg::ExecuteMsg;
 
 #[cw_serde]
 #[derive(QueryResponses)]

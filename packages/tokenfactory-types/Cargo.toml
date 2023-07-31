@@ -1,5 +1,5 @@
 [package]
-name = "tokenfactory-types"
+name = "juno-tokenfactory-types"
 version = "0.0.1"
 authors = ["Reece Williams <reecepbcups@gmail.com>"]
 edition = "2018"

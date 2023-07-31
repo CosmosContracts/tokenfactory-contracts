@@ -8,7 +8,7 @@ use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{Config, STATE};
 
-use tokenfactory_types::msg::ExecuteMsg::Mint;
+use juno_tokenfactory_types::msg::ExecuteMsg::Mint;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
