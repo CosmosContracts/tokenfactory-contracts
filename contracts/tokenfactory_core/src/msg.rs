@@ -9,10 +9,26 @@ pub struct InstantiateMsg {
     pub allowed_mint_addresses: Vec<String>,
 
     // We can manage multiple denoms
-    pub denoms: Vec<String>, // ex: factory/juno1xxx/test
+    pub existing_denoms: Option<Vec<String>>, // ex: factory/juno1xxx/test
+    pub new_denoms: Option<Vec<NewDenom>>,
 }
 
-use cosmwasm_std::Coin;
+#[cw_serde]
+pub struct NewDenom {
+    pub name: String,
+    pub description: Option<String>,
+    pub symbol: String,
+    pub decimals: u32,
+    pub initial_balances: Option<Vec<InitialBalance>>,
+}
+
+#[cw_serde]
+pub struct InitialBalance {
+    pub address: String,
+    pub amount: Uint128,
+}
+
+use cosmwasm_std::{Coin, Uint128};
 pub use tokenfactory_types::msg::ExecuteMsg;
 
 #[cw_serde]

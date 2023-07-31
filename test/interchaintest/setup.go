@@ -7,7 +7,7 @@ import (
 	// Juno types
 	tokenfactorytypes "github.com/CosmWasm/token-factory/x/tokenfactory/types"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	feesharetypes "github.com/CosmosContracts/juno/v14/x/feeshare/types"
+	feesharetypes "github.com/CosmosContracts/juno/v15/x/feeshare/types"
 
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 
@@ -40,7 +40,7 @@ func CreateBaseChain(t *testing.T) []ibc.Chain {
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		{
 			Name:      "juno",
-			Version:   "latest",
+			Version:   "v15.0.0",
 			ChainName: "juno1",
 			ChainConfig: ibc.ChainConfig{
 				GasPrices:      "0ujuno",

@@ -12,7 +12,7 @@ pub enum ContractError {
     #[error("Invalid denom: {denom:?} {message:?}")]
     InvalidDenom { denom: String, message: String },
 
-    #[error("You did not specify any coins to mint for the user.")]
+    #[error("You did not specify any denoms.")]
     NoDenomsProvided {},
 
     #[error("Invalid funds")]

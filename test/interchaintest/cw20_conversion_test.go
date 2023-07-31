@@ -36,7 +36,7 @@ func TestCw20ConversionMigrateContract(t *testing.T) {
 	_, cw20ContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../base_artifacts/cw20_base.wasm", cw20Msg)
 
 	// Tokenfactory Core minter
-	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"denoms":["%s"]}`, tfDenom)
+	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"existing_denoms":["%s"]}`, tfDenom)
 	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
 
 	// transfer admin to the contract
@@ -53,7 +53,7 @@ func TestCw20ConversionMigrateContract(t *testing.T) {
 	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
 
 	// Ensure the contract config data is set correctly.
-	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr, uaddr)
+	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Equal(t, res.Data.AllowedMintAddresses[0], cw20MigrateContractAddr)
 	assert.Equal(t, res.Data.Denoms[0], tfDenom)
 

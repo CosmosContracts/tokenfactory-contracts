@@ -8,4 +8,4 @@ pub struct Config {
     pub denoms: Vec<String>,
 }
 
-pub const STATE: Item<Config> = Item::new("config");
+pub const CONFIG: Item<Config> = Item::new("config");

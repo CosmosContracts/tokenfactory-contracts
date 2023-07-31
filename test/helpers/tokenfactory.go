@@ -15,10 +15,15 @@ import (
 	tokenfactorytypes "github.com/CosmWasm/token-factory/x/tokenfactory/types"
 )
 
+type Coin struct {
+	Denom  string `json:"denom"`
+	Amount string `json:"amount"`
+}
+
 const CHAIN_PREFIX = "juno"
 
 func debugOutput(t *testing.T, stdout string) {
-	if false {
+	if true {
 		t.Log(stdout)
 	}
 }
@@ -145,4 +150,30 @@ func GetTokenFactoryAdmin(t *testing.T, ctx context.Context, chain *cosmos.Cosmo
 	// 	Admin: ...,
 	// }
 	return results.AuthorityMetadata.Admin
+}
+
+func GetTokenFactorySupply(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, fullDenom string) string {
+	// $BINARY q bank total --denom $FULL_DENOM
+
+	cmd := []string{"junod", "query", "bank", "total", "--denom", fullDenom,
+		"--node", chain.GetRPCAddress(),
+		"--chain-id", chain.Config().ChainID,
+		"--output", "json",
+	}
+	stdout, _, err := chain.Exec(ctx, cmd, nil)
+	require.NoError(t, err)
+
+	debugOutput(t, string(stdout))
+
+	// results := &tokenfactorytypes.DenomAuthorityMetadata{}
+	results := &Coin{}
+	err = json.Unmarshal(stdout, results)
+	require.NoError(t, err)
+
+	// t.Log(results)
+
+	err = testutil.WaitForBlocks(ctx, 2, chain)
+	require.NoError(t, err)
+
+	return results.Amount
 }

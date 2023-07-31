@@ -1,7 +1,7 @@
-use cosmwasm_std::{Addr, Coin};
-use token_bindings::TokenMsg;
+use cosmwasm_std::{Addr, Coin, Uint128};
+use token_bindings::{DenomUnit, Metadata, TokenMsg};
 
-use crate::{state::Config, ContractError};
+use crate::{msg::NewDenom, state::Config, ContractError};
 
 pub use tokenfactory_types::msg::ExecuteMsg::Mint;
 
@@ -12,8 +12,8 @@ pub fn is_whitelisted(state: Config, sender: Addr) -> Result<(), ContractError> 
     Ok(())
 }
 
-pub fn is_contract_manager(state: Config, sender: Addr) -> Result<(), ContractError> {
-    if !state.manager.eq(&sender.to_string()) {
+pub fn is_contract_manager(config: Config, sender: Addr) -> Result<(), ContractError> {
+    if !config.manager.eq(&sender.to_string()) {
         return Err(ContractError::Unauthorized {});
     }
     Ok(())
@@ -53,4 +53,37 @@ pub fn pretty_denoms_output(denoms: &[Coin]) -> String {
         .map(|d| format!("{}:{}", d.amount, d.denom))
         .collect::<Vec<String>>()
         .join(", ")
+}
+
+pub fn create_denom_msg(subdenom: String, full_denom: String, denom: NewDenom) -> TokenMsg {
+    TokenMsg::CreateDenom {
+        subdenom,
+        metadata: Some(Metadata {
+            name: Some(denom.name),
+            description: denom.description,
+            denom_units: vec![
+                DenomUnit {
+                    denom: full_denom.clone(),
+                    exponent: 0,
+                    aliases: vec![],
+                },
+                DenomUnit {
+                    denom: denom.symbol.clone(),
+                    exponent: denom.decimals,
+                    aliases: vec![],
+                },
+            ],
+            base: Some(full_denom),
+            display: Some(denom.symbol.clone()),
+            symbol: Some(denom.symbol),
+        }),
+    }
+}
+
+pub fn mint_tokens_msg(address: String, denom: String, amount: Uint128) -> TokenMsg {
+    TokenMsg::MintTokens {
+        denom,
+        amount,
+        mint_to_address: address,
+    }
 }

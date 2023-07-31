@@ -1,10 +1,11 @@
 use cosmwasm_schema::cw_serde;
 
 use cosmwasm_std::Coin;
+use token_bindings::Metadata;
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    // Anyone
+    // == ANYONE ==
     Burn {},
 
     // == WHITELIST ==
@@ -14,22 +15,28 @@ pub enum ExecuteMsg {
         denom: Vec<Coin>,
     },
 
+    // == MANAGER ==
+    BurnFrom {
+        from: String,
+        denom: Coin,
+    },
+
+    TransferAdmin {
+        denom: String,
+        new_address: String,
+    },
+
     ForceTransfer {
         from: String,
         to: String,
         denom: Coin,
     },
 
-    BurnFrom {
-        from: String,
-        denom: Coin,
+    SetMetadata {
+        denom: String,
+        metadata: Metadata,
     },
 
-    // == MANAGER ==
-    TransferAdmin {
-        denom: String,
-        new_address: String,
-    },
     // Could be a DAO, normal contract, or CW4
     // Future: should we specify what name/denom an address can mint?
     AddWhitelist {
