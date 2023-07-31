@@ -50,7 +50,7 @@ schemars = "0.8"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 thiserror = "1.0"
 
-tokenfactory-types = { path = "../../packages/tokenfactory-types" }
+tokenfactory-types = { path = "../../packages/tokenfactory-types", version = "0.0.1"}
 
 [dev-dependencies]
 cw-multi-test = "0.16.1"
