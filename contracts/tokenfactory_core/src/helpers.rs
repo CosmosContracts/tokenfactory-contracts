@@ -57,7 +57,7 @@ pub fn pretty_denoms_output(denoms: &[Coin]) -> String {
 
 pub fn create_denom_msg(subdenom: String, full_denom: String, denom: NewDenom) -> TokenMsg {
     TokenMsg::CreateDenom {
-        subdenom: subdenom.clone(),
+        subdenom,
         metadata: Some(Metadata {
             name: Some(denom.name),
             description: denom.description,
@@ -82,8 +82,8 @@ pub fn create_denom_msg(subdenom: String, full_denom: String, denom: NewDenom) -
 
 pub fn mint_tokens_msg(address: String, denom: String, amount: Uint128) -> TokenMsg {
     TokenMsg::MintTokens {
-        denom: denom,
-        amount: amount,
+        denom,
+        amount,
         mint_to_address: address,
     }
 }
