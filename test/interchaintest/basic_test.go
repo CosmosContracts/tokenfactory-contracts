@@ -37,14 +37,14 @@ func TestBasicContract(t *testing.T) {
 
 	// Setup TokenFactory Core contract (mints on your/daos behalf) where uaddr can mint for anyone
 	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":["%s"],"existing_denoms":["%s"]}`, uaddr, tfDenom)
-	tfCoreCodeId, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
+	tfCoreCodeId, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/juno_tokenfactory_core.wasm", tfCoreMsg)
 
 	assert.Assert(t, len(tfCoreContractAddr) > 0)
 	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 1)
 	assert.Equal(t, res.Data.Denoms[0], tfDenom)
 
-	tfCoreCodeId, err := juno.StoreContract(ctx, user.KeyName, "../../artifacts/tokenfactory_core.wasm")
+	tfCoreCodeId, err := juno.StoreContract(ctx, user.KeyName, "../../artifacts/juno_tokenfactory_core.wasm")
 
 	// transfer admin to the contract
 	helpers.TransferTokenFactoryAdmin(t, ctx, juno, user, tfCoreContractAddr, tfDenom)
