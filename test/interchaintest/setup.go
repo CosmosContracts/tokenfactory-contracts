@@ -5,22 +5,22 @@ import (
 	"testing"
 
 	// Juno types
-	tokenfactorytypes "github.com/CosmWasm/token-factory/x/tokenfactory/types"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	feesharetypes "github.com/CosmosContracts/juno/v15/x/feeshare/types"
+	feesharetypes "github.com/CosmosContracts/juno/v16/x/feeshare/types"
+	tokenfactorytypes "github.com/CosmosContracts/juno/v16/x/tokenfactory/types"
 
-	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
+	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 
 	"github.com/docker/docker/client"
-	"github.com/strangelove-ventures/interchaintest/v4"
-	"github.com/strangelove-ventures/interchaintest/v4/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v4/ibc"
-	"github.com/strangelove-ventures/interchaintest/v4/testreporter"
+	"github.com/strangelove-ventures/interchaintest/v7"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v7/testreporter"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
 
-func junoEncoding() *simappparams.EncodingConfig {
+func junoEncoding() *testutil.TestEncodingConfig {
 	cfg := cosmos.DefaultEncoding()
 
 	// register custom juno types

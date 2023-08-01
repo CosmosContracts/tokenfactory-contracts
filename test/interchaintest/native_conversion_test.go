@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/strangelove-ventures/interchaintest/v4"
-	"github.com/strangelove-ventures/interchaintest/v4/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v7"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"gotest.tools/assert"
 
 	helpers "github.com/CosmosContracts/tokenfactory-contracts/helpers"
@@ -25,11 +25,11 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 	// User Setup
 	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", int64(10_000_000), juno, juno)
 	user := users[0]
-	uaddr := user.Bech32Address(juno.Config().Bech32Prefix)
+	uaddr := user.FormattedAddress()
 	t.Log(uaddr)
 
 	user2 := users[1]
-	uaddr2 := user2.Bech32Address(juno.Config().Bech32Prefix)
+	uaddr2 := user2.FormattedAddress()
 
 	// ensure user has some ujuno which is not 0
 	CheckBalance(t, ctx, juno, uaddr, nativeDenom, 10_000_000)
@@ -41,7 +41,7 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 
 	// Tokenfactory Core minter
 	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"existing_denoms":["%s"]}`, tfDenom)
-	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/juno_tokenfactory_core.wasm", tfCoreMsg)
+	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), "../../artifacts/juno_tokenfactory_core.wasm", tfCoreMsg)
 
 	// transfer admin to the contract
 	helpers.TransferTokenFactoryAdmin(t, ctx, juno, user, tfCoreContractAddr, tfDenom)
@@ -49,11 +49,11 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 
 	// conversion migrate contract (1 native -> 1 tf denom)
 	migrateNativeMsg := fmt.Sprintf(`{"burn_denom":"%s","contract_minter_address":"%s","tf_denom":"%s"}`, nativeDenom, tfCoreContractAddr, tfDenom)
-	_, naitveMigrateContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/migrate.wasm", migrateNativeMsg)
+	_, naitveMigrateContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), "../../artifacts/migrate.wasm", migrateNativeMsg)
 
 	// Allow the Migration contract to mint through the Tokenfactory Core contract
 	msg := fmt.Sprintf(`{"add_whitelist":{"addresses":["%s"]}}`, naitveMigrateContractAddr)
-	juno.ExecuteContract(ctx, user.KeyName, tfCoreContractAddr, msg)
+	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
 
 	// Ensure the contract config data is set correctly.
 	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr)
