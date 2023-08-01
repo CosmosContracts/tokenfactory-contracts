@@ -1,6 +1,6 @@
 name: ictest
 
-on: [push]
+on: [push, pull_request]
 
 # Cancel task if a new commit is pushed while old workflows run
 concurrency:
