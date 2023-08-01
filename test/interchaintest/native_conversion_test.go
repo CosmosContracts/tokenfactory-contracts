@@ -32,8 +32,8 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 	uaddr2 := user2.FormattedAddress()
 
 	// ensure user has some ujuno which is not 0
-	CheckBalance(t, ctx, juno, uaddr, nativeDenom, 10_000_000)
-	CheckBalance(t, ctx, juno, uaddr2, nativeDenom, 10_000_000)
+	AssertBalance(t, ctx, juno, uaddr, nativeDenom, 10_000_000)
+	AssertBalance(t, ctx, juno, uaddr2, nativeDenom, 10_000_000)
 
 	// Create token-factory denom
 	tfDenom := helpers.CreateTokenFactoryDenom(t, ctx, juno, user, "testdenom")
@@ -41,7 +41,7 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 
 	// Tokenfactory Core minter
 	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"existing_denoms":["%s"]}`, tfDenom)
-	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), "../../artifacts/juno_tokenfactory_core.wasm", tfCoreMsg)
+	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), TF_CORE_FILE, tfCoreMsg)
 
 	// transfer admin to the contract
 	helpers.TransferTokenFactoryAdmin(t, ctx, juno, user, tfCoreContractAddr, tfDenom)
@@ -49,7 +49,7 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 
 	// conversion migrate contract (1 native -> 1 tf denom)
 	migrateNativeMsg := fmt.Sprintf(`{"burn_denom":"%s","contract_minter_address":"%s","tf_denom":"%s"}`, nativeDenom, tfCoreContractAddr, tfDenom)
-	_, naitveMigrateContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), "../../artifacts/migrate.wasm", migrateNativeMsg)
+	_, naitveMigrateContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), MIGRATE_FILE, migrateNativeMsg)
 
 	// Allow the Migration contract to mint through the Tokenfactory Core contract
 	msg := fmt.Sprintf(`{"add_whitelist":{"addresses":["%s"]}}`, naitveMigrateContractAddr)
@@ -61,17 +61,17 @@ func TestNativeConversionMigrateContract(t *testing.T) {
 	assert.Equal(t, res.Data.Denoms[0], tfDenom)
 
 	// ensure user has 0 tf denom balance
-	CheckBalance(t, ctx, juno, uaddr, tfDenom, 0)
+	AssertBalance(t, ctx, juno, uaddr, tfDenom, 0)
 
 	// Execute with an amount
 	helpers.ExecuteMsgWithAmount(t, ctx, juno, user2, naitveMigrateContractAddr, fmt.Sprintf("7%s", nativeDenom), `{"convert":{}}`)
 
 	// Ensure we got the correct amount of tokens in exchange for the native token. (no gas prices)
-	CheckBalance(t, ctx, juno, uaddr2, tfDenom, 7)
-	CheckBalance(t, ctx, juno, uaddr2, nativeDenom, 9_999_993)
+	AssertBalance(t, ctx, juno, uaddr2, tfDenom, 7)
+	AssertBalance(t, ctx, juno, uaddr2, nativeDenom, 9_999_993)
 
 	// the migrate contract should still have 0 balance of this denom (to ensure it does not double mint)
-	CheckBalance(t, ctx, juno, naitveMigrateContractAddr, tfDenom, 0)
+	AssertBalance(t, ctx, juno, naitveMigrateContractAddr, tfDenom, 0)
 
 	// // !important: debugging
 	// t.Log("GetHostRPCAddress", juno.GetHostRPCAddress())

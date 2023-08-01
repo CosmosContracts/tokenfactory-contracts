@@ -11,8 +11,6 @@ import (
 	helpers "github.com/CosmosContracts/tokenfactory-contracts/helpers"
 )
 
-// const CHAIN_PREFIX = "juno"
-
 // This test ensures the basic contract logic works (bindings mostly & transfers)
 // Actual contract logic checks are handled in the TestMigrateContract test
 func TestBasicContract(t *testing.T) {
@@ -35,16 +33,14 @@ func TestBasicContract(t *testing.T) {
 	denomAdmin := helpers.GetTokenFactoryAdmin(t, ctx, juno, tfDenom)
 	assert.Equal(t, uaddr, denomAdmin)
 
-	// Setup TokenFactory Core contract (mints on your/daos behalf) where uaddr can mint for anyone
+	// Setup TokenFactory Core contract (mints on yours/contracts behalf) where uaddr can mint for anyone
 	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":["%s"],"existing_denoms":["%s"]}`, uaddr, tfDenom)
-	tfCoreCodeId, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), "../../artifacts/juno_tokenfactory_core.wasm", tfCoreMsg)
+	tfCoreCodeId, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), TF_CORE_FILE, tfCoreMsg)
 
 	assert.Assert(t, len(tfCoreContractAddr) > 0)
 	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 1)
 	assert.Equal(t, res.Data.Denoms[0], tfDenom)
-
-	tfCoreCodeId, err := juno.StoreContract(ctx, user.KeyName(), "../../artifacts/juno_tokenfactory_core.wasm")
 
 	// transfer admin to the contract
 	helpers.TransferTokenFactoryAdmin(t, ctx, juno, user, tfCoreContractAddr, tfDenom)
@@ -56,7 +52,7 @@ func TestBasicContract(t *testing.T) {
 	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
 
 	// BALANCES
-	CheckBalance(t, ctx, juno, uaddr, tfDenom, 100)
+	AssertBalance(t, ctx, juno, uaddr, tfDenom, 100)
 	// do the same thing but through the TF contract query
 	balRes := GetCoreContractUserBalance(t, ctx, juno, tfCoreContractAddr, uaddr, tfDenom)
 	assert.Equal(t, balRes.Data.Amount, "100")
@@ -85,14 +81,13 @@ func TestBasicContract(t *testing.T) {
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 1)
 
 	// force transfer 1 token from user to user2
-	// '{"force_transfer":{"from":"%s","to":"juno190g5j8aszqhvtg7cprmev8xcxs6csra7xnk3n3","denom":{"denom":"%s","amount":"1"}}}' $KEY_ADDR $FULL_DENOM
 	msg = fmt.Sprintf(`{"force_transfer":{"from":"%s","to":"%s","denom":{"denom":"%s","amount":"3"}}}`, uaddr, uaddr2, tfDenom)
 	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
-	CheckBalance(t, ctx, juno, uaddr2, tfDenom, 3)
+	AssertBalance(t, ctx, juno, uaddr2, tfDenom, 3)
 
 	msg = fmt.Sprintf(`{"burn_from":{"from":"%s","denom":{"denom":"%s","amount":"1"}}}`, uaddr2, tfDenom)
 	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
-	CheckBalance(t, ctx, juno, uaddr2, tfDenom, 2)
+	AssertBalance(t, ctx, juno, uaddr2, tfDenom, 2)
 
 	// mint a token as user2 to user2 addr
 
@@ -119,14 +114,16 @@ func TestBasicContract(t *testing.T) {
 
 	// Create denom on instantiation
 	tfMsg := fmt.Sprintf(`{"allowed_mint_addresses":["%s"],"new_denoms":[{"name":"new","description":"desc","symbol":"crt","decimals":6,"initial_balances":[{"address":"%s","amount":"420"}]}]}`, uaddr, uaddr)
-	helpers.InstantiateMsgWithGas(t, ctx, juno, user, tfCoreCodeId, "5000000", "10000000ujuno", tfMsg)
+
+	// TODO: When ictest allows for gas=auto on init
+	// _, tfCoreAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), TF_CORE_FILE, tfMsg)
+	helpers.InstantiateMsgWithGas(t, ctx, juno, user, tfCoreCodeId, "5000000", "", tfMsg)
 	tfCoreAddr, err := helpers.GetContractAddress(ctx, juno, tfCoreCodeId)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	t.Log("tfCoreCreateAddr", tfCoreAddr)
-	t.Log("err", err)
 
 	tfCreatedDenom := fmt.Sprintf(`factory/%s/crt`, tfCoreAddr)
 
@@ -139,7 +136,7 @@ func TestBasicContract(t *testing.T) {
 	assert.Equal(t, tfCoreAddr, createdDenomAdmin)
 
 	// Validate initial balances.
-	CheckBalance(t, ctx, juno, uaddr, tfCreatedDenom, 420)
+	AssertBalance(t, ctx, juno, uaddr, tfCreatedDenom, 420)
 	// do the same thing but through the TF contract query
 	createdBalRes := GetCoreContractUserBalance(t, ctx, juno, tfCoreAddr, uaddr, tfCreatedDenom)
 	assert.Equal(t, createdBalRes.Data.Amount, "420")

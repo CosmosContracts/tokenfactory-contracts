@@ -20,6 +20,50 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
+const (
+	TF_CORE_FILE = "../../artifacts/juno_tokenfactory_core.wasm"
+	MIGRATE_FILE = "../../artifacts/migrate.wasm"
+)
+
+var (
+	VotingPeriod     = "15s"
+	MaxDepositPeriod = "10s"
+	Denom            = "ujuno"
+
+	JunoE2ERepo  = "ghcr.io/cosmoscontracts/juno-e2e"
+	JunoMainRepo = "ghcr.io/cosmoscontracts/juno"
+
+	IBCRelayerImage   = "ghcr.io/cosmos/relayer"
+	IBCRelayerVersion = "main"
+
+	JunoVersion = "v16.0.0"
+
+	// SDK v47 Genesis
+	defaultGenesisKV = []cosmos.GenesisKV{
+		{
+			Key:   "app_state.gov.params.voting_period",
+			Value: VotingPeriod,
+		},
+		{
+			Key:   "app_state.gov.params.max_deposit_period",
+			Value: MaxDepositPeriod,
+		},
+		{
+			Key:   "app_state.gov.params.min_deposit.0.denom",
+			Value: Denom,
+		},
+		// mainnet = 2mil gas, we just require 1 gas for testing
+		{
+			Key:   "app_state.tokenfactory.params.denom_creation_gas_consume",
+			Value: 1,
+		},
+		{
+			Key:   "app_state.tokenfactory.params.denom_creation_fee",
+			Value: nil,
+		},
+	}
+)
+
 func junoEncoding() *testutil.TestEncodingConfig {
 	cfg := cosmos.DefaultEncoding()
 
@@ -40,12 +84,14 @@ func CreateBaseChain(t *testing.T) []ibc.Chain {
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		{
 			Name:      "juno",
-			Version:   "v15.0.0",
+			Version:   JunoVersion,
 			ChainName: "juno1",
 			ChainConfig: ibc.ChainConfig{
-				GasPrices:      "0ujuno",
-				GasAdjustment:  5.0,
-				EncodingConfig: junoEncoding(),
+				GasPrices:              "0ujuno",
+				GasAdjustment:          5.0,
+				EncodingConfig:         junoEncoding(),
+				ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisKV),
+				UsingNewGenesisCommand: true,
 			},
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,

@@ -37,7 +37,7 @@ func TestCw20ConversionMigrateContract(t *testing.T) {
 
 	// Tokenfactory Core minter
 	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"existing_denoms":["%s"]}`, tfDenom)
-	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), "../../artifacts/juno_tokenfactory_core.wasm", tfCoreMsg)
+	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), TF_CORE_FILE, tfCoreMsg)
 
 	// transfer admin to the contract
 	helpers.TransferTokenFactoryAdmin(t, ctx, juno, user, tfCoreContractAddr, tfDenom)
@@ -46,7 +46,7 @@ func TestCw20ConversionMigrateContract(t *testing.T) {
 
 	// conversion migrate contract (1 CW20 -> contract -> burn CW20 and mint 1 tf denom)
 	migrateCW20Msg := fmt.Sprintf(`{"cw20_token_address":"%s","contract_minter_address":"%s","tf_denom":"%s"}`, cw20ContractAddr, tfCoreContractAddr, tfDenom)
-	_, cw20MigrateContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), "../../artifacts/migrate.wasm", migrateCW20Msg)
+	_, cw20MigrateContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName(), MIGRATE_FILE, migrateCW20Msg)
 
 	// Allow the Migration contract to mint through the Tokenfactory Core contract
 	msg := fmt.Sprintf(`{"add_whitelist":{"addresses":["%s"]}}`, cw20MigrateContractAddr)
@@ -59,7 +59,7 @@ func TestCw20ConversionMigrateContract(t *testing.T) {
 
 	// actual CW20 testing on the contract
 	// ensure user has 0 tf denom balance
-	CheckBalance(t, ctx, juno, uaddr, tfDenom, 0)
+	AssertBalance(t, ctx, juno, uaddr, tfDenom, 0)
 
 	// send the message through CW20 -> migrate conversion contract.
 	// msg = fmt.Sprintf(`{"send":{"contract":"%s","amount":"%s","msg":"%s"}}`, cw20MigrateContractAddr, "5", b64.StdEncoding.EncodeToString([]byte(`{"receive":{}}`)))
@@ -67,9 +67,9 @@ func TestCw20ConversionMigrateContract(t *testing.T) {
 	helpers.CW20Message(t, ctx, juno, user, cw20ContractAddr, cw20MigrateContractAddr, "5", `{"receive":{}}`)
 
 	// we should now have 5 balance of the tf denom
-	CheckBalance(t, ctx, juno, uaddr, tfDenom, 5)
+	AssertBalance(t, ctx, juno, uaddr, tfDenom, 5)
 	// the cw20 migrate contract should still have 0 balance of this denom (to ensure it does not double mint)
-	CheckBalance(t, ctx, juno, cw20MigrateContractAddr, tfDenom, 0)
+	AssertBalance(t, ctx, juno, cw20MigrateContractAddr, tfDenom, 0)
 
 	// !important: debugging
 	// t.Log("GetHostRPCAddress", juno.GetHostRPCAddress())

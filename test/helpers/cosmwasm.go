@@ -31,20 +31,24 @@ func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 }
 
 func InstantiateMsgWithGas(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, codeId, gas, coinAmt, message string) {
-	// TODO: in the future (SDK v47 with genesis params) change this to not use amount :)
+	// TODO: ictest does not allow --gas=auto for init yet. So still stuck with this ugh
 	cmd := []string{"junod", "tx", "wasm", "instantiate", codeId, message,
 		"--node", chain.GetRPCAddress(),
 		"--home", chain.HomeDir(),
 		"--chain-id", chain.Config().ChainID,
 		"--from", user.KeyName(),
 		"--gas", gas,
-		"--amount", coinAmt,
 		"--label", "contract" + codeId,
 		"--keyring-dir", chain.HomeDir(),
 		"--keyring-backend", keyring.BackendTest,
 		"--no-admin",
 		"-y",
 	}
+
+	if len(coinAmt) > 0 {
+		cmd = append(cmd, "--amount", coinAmt)
+	}
+
 	stdout, _, err := chain.Exec(ctx, cmd, nil)
 	require.NoError(t, err)
 
