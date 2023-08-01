@@ -37,7 +37,7 @@ func TestCw20ConversionMigrateContract(t *testing.T) {
 
 	// Tokenfactory Core minter
 	tfCoreMsg := fmt.Sprintf(`{"allowed_mint_addresses":[],"existing_denoms":["%s"]}`, tfDenom)
-	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/tokenfactory_core.wasm", tfCoreMsg)
+	_, tfCoreContractAddr := helpers.SetupContract(t, ctx, juno, user.KeyName, "../../artifacts/juno_tokenfactory_core.wasm", tfCoreMsg)
 
 	// transfer admin to the contract
 	helpers.TransferTokenFactoryAdmin(t, ctx, juno, user, tfCoreContractAddr, tfDenom)

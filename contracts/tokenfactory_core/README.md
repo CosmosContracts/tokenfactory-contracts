@@ -45,7 +45,7 @@ junod tx tokenfactory create-denom abcde $FLAGS
 
 
 # upload this contract (skip if you use the mainnet code)
-# junod tx wasm store artifacts/tokenfactory_core.wasm $FLAGS
+# junod tx wasm store artifacts/juno_tokenfactory_core.wasm $FLAGS
 
 # Initialize this contract
 # You may want to set this as a normal admin initially before changing its admin to a DAO
