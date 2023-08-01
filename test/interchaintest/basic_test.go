@@ -49,7 +49,9 @@ func TestBasicContract(t *testing.T) {
 
 	// Mint 100 tokens to user through the tfCore contract
 	msg := fmt.Sprintf(`{"mint":{"address":"%s","denom":[{"denom":"%s","amount":"100"}]}}`, uaddr, tfDenom)
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 
 	// BALANCES
 	AssertBalance(t, ctx, juno, uaddr, tfDenom, 100)
@@ -60,7 +62,9 @@ func TestBasicContract(t *testing.T) {
 	// Whitelist
 	// Try to add user to contract whitelist again.
 	msg = fmt.Sprintf(`{"add_whitelist":{"addresses":["%s"]}}`, uaddr)
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 
 	// still is one
 	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
@@ -68,46 +72,61 @@ func TestBasicContract(t *testing.T) {
 
 	// add a diff user
 	msg = fmt.Sprintf(`{"add_whitelist":{"addresses":["%s"]}}`, uaddr2)
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 
 	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 2)
 
 	// remove user2 from whitelist
 	msg = fmt.Sprintf(`{"remove_whitelist":{"addresses":["%s"]}}`, uaddr2)
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 
 	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.AllowedMintAddresses) == 1)
 
 	// force transfer 1 token from user to user2
 	msg = fmt.Sprintf(`{"force_transfer":{"from":"%s","to":"%s","denom":{"denom":"%s","amount":"3"}}}`, uaddr, uaddr2, tfDenom)
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 	AssertBalance(t, ctx, juno, uaddr2, tfDenom, 3)
 
 	msg = fmt.Sprintf(`{"burn_from":{"from":"%s","denom":{"denom":"%s","amount":"1"}}}`, uaddr2, tfDenom)
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 	AssertBalance(t, ctx, juno, uaddr2, tfDenom, 2)
 
 	// mint a token as user2 to user2 addr
 
 	// transfer admin to uaddr2 from contract & remove from being able to mint
 	msg = fmt.Sprintf(`{"transfer_admin":{"denom":"%s","new_address":"%s"}}`, tfDenom, uaddr2)
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
+
 	denomAdmin = helpers.GetTokenFactoryAdmin(t, ctx, juno, tfDenom)
 	assert.Equal(t, uaddr2, denomAdmin)
 
 	// DENOM WHITELIST
 	// adds a denom (Only allow factory/ in the future?)
 	msg = fmt.Sprintf(`{"add_denom":{"denoms":["%s"]}}`, "randomdenom")
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 
 	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.Denoms) == 1)
 
 	// Remove denom
 	msg = fmt.Sprintf(`{"remove_denom":{"denoms":["%s"]}}`, "randomdenom")
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 
 	res = GetContractConfig(t, ctx, juno, tfCoreContractAddr)
 	assert.Assert(t, len(res.Data.Denoms) == 0)

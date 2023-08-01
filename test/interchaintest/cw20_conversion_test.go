@@ -50,7 +50,9 @@ func TestCw20ConversionMigrateContract(t *testing.T) {
 
 	// Allow the Migration contract to mint through the Tokenfactory Core contract
 	msg := fmt.Sprintf(`{"add_whitelist":{"addresses":["%s"]}}`, cw20MigrateContractAddr)
-	juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg)
+	if _, err := juno.ExecuteContract(ctx, user.KeyName(), tfCoreContractAddr, msg); err != nil {
+		t.Fatal(err)
+	}
 
 	// Ensure the contract config data is set correctly.
 	res := GetContractConfig(t, ctx, juno, tfCoreContractAddr)
