@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/strangelove-ventures/interchaintest/v4/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/assert"
 )
 
-func CheckBalance(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, address, denom string, amount int64) {
+func AssertBalance(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, address, denom string, amount int64) {
 	if bal, err := chain.GetBalance(ctx, address, denom); err != nil {
 		t.Fatal(err)
 	} else {

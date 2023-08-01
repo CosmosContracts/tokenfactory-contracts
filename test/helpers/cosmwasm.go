@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/strangelove-ventures/interchaintest/v4/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v4/ibc"
-	"github.com/strangelove-ventures/interchaintest/v4/testutil"
+	"github.com/strangelove-ventures/interchaintest/v7/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v7/ibc"
+	"github.com/strangelove-ventures/interchaintest/v7/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,21 +30,25 @@ func SetupContract(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 	return codeId, contractAddr
 }
 
-func InstantiateMsgWithGas(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user *ibc.Wallet, codeId, gas, coinAmt, message string) {
-	// TODO: in the future (SDK v47 with genesis params) change this to not use amount :)
+func InstantiateMsgWithGas(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, codeId, gas, coinAmt, message string) {
+	// TODO: ictest does not allow --gas=auto for init yet. So still stuck with this ugh
 	cmd := []string{"junod", "tx", "wasm", "instantiate", codeId, message,
 		"--node", chain.GetRPCAddress(),
 		"--home", chain.HomeDir(),
 		"--chain-id", chain.Config().ChainID,
-		"--from", user.KeyName,
+		"--from", user.KeyName(),
 		"--gas", gas,
-		"--amount", coinAmt,
 		"--label", "contract" + codeId,
 		"--keyring-dir", chain.HomeDir(),
 		"--keyring-backend", keyring.BackendTest,
 		"--no-admin",
 		"-y",
 	}
+
+	if len(coinAmt) > 0 {
+		cmd = append(cmd, "--amount", coinAmt)
+	}
+
 	stdout, _, err := chain.Exec(ctx, cmd, nil)
 	require.NoError(t, err)
 
@@ -80,7 +84,7 @@ func GetContractAddress(ctx context.Context, chain *cosmos.CosmosChain, codeId s
 	return contractAddress, nil
 }
 
-func ExecuteMsgWithAmount(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user *ibc.Wallet, contractAddr, amount, message string) {
+func ExecuteMsgWithAmount(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, contractAddr, amount, message string) {
 	// amount is #utoken
 
 	// There has to be a way to do this in ictest?
@@ -88,7 +92,7 @@ func ExecuteMsgWithAmount(t *testing.T, ctx context.Context, chain *cosmos.Cosmo
 		"--node", chain.GetRPCAddress(),
 		"--home", chain.HomeDir(),
 		"--chain-id", chain.Config().ChainID,
-		"--from", user.KeyName,
+		"--from", user.KeyName(),
 		"--gas", "500000",
 		"--amount", amount,
 		"--keyring-dir", chain.HomeDir(),
@@ -106,17 +110,17 @@ func ExecuteMsgWithAmount(t *testing.T, ctx context.Context, chain *cosmos.Cosmo
 	}
 }
 
-func CW20Message(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user *ibc.Wallet, cw20ContractAddr, actionContractAddr, amount, message string) {
+func CW20Message(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, cw20ContractAddr, actionContractAddr, amount, message string) {
 	msg := fmt.Sprintf(`{"send":{"contract":"%s","amount":"%s","msg":"%s"}}`, actionContractAddr, amount, b64.StdEncoding.EncodeToString([]byte(message)))
 
 	// not enough gas... used 200k but needs more. So doing manually.
-	// txHash, _ := chain.ExecuteContract(ctx, user.KeyName, cw20ContractAddr, msg)
+	// txHash, _ := chain.ExecuteContract(ctx, user.KeyName(), cw20ContractAddr, msg)
 
 	cmd := []string{"junod", "tx", "wasm", "execute", cw20ContractAddr, msg,
 		"--node", chain.GetRPCAddress(),
 		"--home", chain.HomeDir(),
 		"--chain-id", chain.Config().ChainID,
-		"--from", user.KeyName,
+		"--from", user.KeyName(),
 		"--gas", "500000",
 		"--keyring-dir", chain.HomeDir(),
 		"--keyring-backend", keyring.BackendTest,
