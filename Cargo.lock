@@ -559,7 +559,7 @@ dependencies = [
  "schemars",
  "serde",
  "thiserror",
- "token-bindings 0.10.2",
+ "token-bindings 0.10.3",
 ]
 
 [[package]]
@@ -570,7 +570,7 @@ dependencies = [
  "cosmwasm-std",
  "schemars",
  "serde",
- "token-bindings 0.10.2",
+ "token-bindings 0.10.3",
 ]
 
 [[package]]
@@ -951,9 +951,9 @@ dependencies = [
 
 [[package]]
 name = "token-bindings"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b0a73aa1767debafefe5fa89b3a1d3e7648dcf24ab982d72a385719cd7b8518"
+checksum = "752a7997ebaa191cf3d8436261e449732e65268e552e8bea6133c3b21b48fe36"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
