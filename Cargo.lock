@@ -547,7 +547,7 @@ dependencies = [
 
 [[package]]
 name = "juno-tokenfactory-core"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -564,7 +564,7 @@ dependencies = [
 
 [[package]]
 name = "juno-tokenfactory-types"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
