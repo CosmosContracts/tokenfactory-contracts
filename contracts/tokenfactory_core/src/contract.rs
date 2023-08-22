@@ -14,7 +14,7 @@ use crate::helpers::{
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{Config, CONFIG};
 
-use token_bindings::{TokenFactoryMsg, TokenMsg};
+use token_bindings::TokenFactoryMsg;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:tokenfactory-core";
@@ -41,8 +41,8 @@ pub fn instantiate(
     }
 
     // Create new denoms.
-    let mut new_denom_msgs: Vec<TokenMsg> = vec![];
-    let mut new_mint_msgs: Vec<TokenMsg> = vec![];
+    let mut new_denom_msgs: Vec<TokenFactoryMsg> = vec![];
+    let mut new_mint_msgs: Vec<TokenFactoryMsg> = vec![];
 
     if let Some(new_denoms) = msg.new_denoms {
         if !new_denoms.is_empty() {
@@ -138,7 +138,7 @@ pub fn execute(
             }
 
             // burn from from_address
-            let msg: TokenMsg = TokenMsg::BurnTokens {
+            let msg: TokenFactoryMsg = TokenFactoryMsg::BurnTokens {
                 denom: denom.denom.clone(),
                 amount: denom.amount,
                 burn_from_address: from,
@@ -158,7 +158,7 @@ pub fn execute(
             let config = CONFIG.load(deps.storage)?;
             is_contract_manager(config, info.sender)?;
 
-            let msg: TokenMsg = TokenMsg::ForceTransfer {
+            let msg: TokenFactoryMsg = TokenFactoryMsg::ForceTransfer {
                 denom: denom.denom.clone(),
                 amount: denom.amount,
                 from_address: from,
@@ -175,7 +175,7 @@ pub fn execute(
             let config = CONFIG.load(deps.storage)?;
             is_contract_manager(config, info.sender)?;
 
-            let msg: TokenMsg = TokenMsg::SetMetadata {
+            let msg: TokenFactoryMsg = TokenFactoryMsg::SetMetadata {
                 denom: denom.clone(),
                 metadata,
             };
@@ -285,7 +285,7 @@ pub fn execute_transfer_admin(
         })?;
     }
 
-    let msg = TokenMsg::ChangeAdmin {
+    let msg = TokenFactoryMsg::ChangeAdmin {
         denom: denom.to_string(),
         new_admin_address: new_addr.to_string(),
     };
@@ -306,7 +306,7 @@ pub fn execute_mint(
 
     is_whitelisted(config, info.sender)?;
 
-    let mint_msgs: Vec<TokenMsg> = mint_factory_token_messages(&address, &denoms)?;
+    let mint_msgs: Vec<TokenFactoryMsg> = mint_factory_token_messages(&address, &denoms)?;
 
     Ok(Response::new()
         .add_attribute("method", "execute_mint")
@@ -333,9 +333,9 @@ pub fn execute_burn(
         .cloned()
         .partition(|coin| config.denoms.iter().any(|d| *d == coin.denom));
 
-    let burn_msgs: Vec<TokenMsg> = factory_denoms
+    let burn_msgs: Vec<TokenFactoryMsg> = factory_denoms
         .iter()
-        .map(|coin| TokenMsg::BurnTokens {
+        .map(|coin| TokenFactoryMsg::BurnTokens {
             denom: coin.denom.clone(),
             amount: coin.amount,
             burn_from_address: env.contract.address.to_string(),
