@@ -60,10 +60,6 @@ var (
 			Key:   "app_state.tokenfactory.params.denom_creation_fee",
 			Value: nil,
 		},
-		{
-			Key:   "app_state.bank.params.denom_metadata",
-			Value: nil,
-		},
 	}
 )
 
