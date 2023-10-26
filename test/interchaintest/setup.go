@@ -30,7 +30,6 @@ var (
 	MaxDepositPeriod = "10s"
 	Denom            = "ujuno"
 
-	JunoE2ERepo  = "ghcr.io/cosmoscontracts/juno-e2e"
 	JunoMainRepo = "ghcr.io/cosmoscontracts/juno"
 
 	IBCRelayerImage   = "ghcr.io/cosmos/relayer"
@@ -61,6 +60,10 @@ var (
 			Key:   "app_state.tokenfactory.params.denom_creation_fee",
 			Value: nil,
 		},
+		{
+			Key:   "app_state.bank.params.denom_metadata",
+			Value: nil,
+		},
 	}
 )
 
@@ -87,11 +90,10 @@ func CreateBaseChain(t *testing.T) []ibc.Chain {
 			Version:   JunoVersion,
 			ChainName: "juno1",
 			ChainConfig: ibc.ChainConfig{
-				GasPrices:              "0ujuno",
-				GasAdjustment:          5.0,
-				EncodingConfig:         junoEncoding(),
-				ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisKV),
-				UsingNewGenesisCommand: true,
+				GasPrices:      "0ujuno",
+				GasAdjustment:  5.0,
+				EncodingConfig: junoEncoding(),
+				ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisKV),
 			},
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,
