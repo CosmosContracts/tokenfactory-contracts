@@ -14,7 +14,7 @@ func AssertBalance(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain,
 		t.Fatal(err)
 	} else {
 		t.Log(address, "balance:", bal, denom)
-		assert.Equal(t, bal, amount)
+		assert.Equal(t, bal.Int64(), amount)
 	}
 }
 

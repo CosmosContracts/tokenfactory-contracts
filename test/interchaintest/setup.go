@@ -6,8 +6,8 @@ import (
 
 	// Juno types
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	feesharetypes "github.com/CosmosContracts/juno/v16/x/feeshare/types"
-	tokenfactorytypes "github.com/CosmosContracts/juno/v16/x/tokenfactory/types"
+	feesharetypes "github.com/CosmosContracts/juno/v17/x/feeshare/types"
+	tokenfactorytypes "github.com/CosmosContracts/juno/v17/x/tokenfactory/types"
 
 	testutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 
@@ -30,13 +30,12 @@ var (
 	MaxDepositPeriod = "10s"
 	Denom            = "ujuno"
 
-	JunoE2ERepo  = "ghcr.io/cosmoscontracts/juno-e2e"
 	JunoMainRepo = "ghcr.io/cosmoscontracts/juno"
 
 	IBCRelayerImage   = "ghcr.io/cosmos/relayer"
 	IBCRelayerVersion = "main"
 
-	JunoVersion = "v16.0.0"
+	JunoVersion = "v17.0.0"
 
 	// SDK v47 Genesis
 	defaultGenesisKV = []cosmos.GenesisKV{
@@ -87,11 +86,10 @@ func CreateBaseChain(t *testing.T) []ibc.Chain {
 			Version:   JunoVersion,
 			ChainName: "juno1",
 			ChainConfig: ibc.ChainConfig{
-				GasPrices:              "0ujuno",
-				GasAdjustment:          5.0,
-				EncodingConfig:         junoEncoding(),
-				ModifyGenesis:          cosmos.ModifyGenesis(defaultGenesisKV),
-				UsingNewGenesisCommand: true,
+				GasPrices:      "0ujuno",
+				GasAdjustment:  5.0,
+				EncodingConfig: junoEncoding(),
+				ModifyGenesis:  cosmos.ModifyGenesis(defaultGenesisKV),
 			},
 			NumValidators: &numVals,
 			NumFullNodes:  &numFullNodes,

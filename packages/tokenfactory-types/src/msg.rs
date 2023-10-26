@@ -1,6 +1,7 @@
 use cosmwasm_schema::cw_serde;
 
 use cosmwasm_std::Coin;
+// use token_bindings::Metadata;
 use token_bindings::Metadata;
 
 #[cw_serde]

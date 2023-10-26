@@ -1,5 +1,5 @@
 use cosmwasm_std::{Addr, Coin, Uint128};
-use token_bindings::{DenomUnit, Metadata, TokenMsg};
+use token_bindings::{DenomUnit, Metadata, TokenFactoryMsg};
 
 use crate::{msg::NewDenom, state::Config, ContractError};
 
@@ -23,19 +23,19 @@ pub fn is_contract_manager(config: Config, sender: Addr) -> Result<(), ContractE
 /// If there are no denoms provided to mint (standard coins), it will return an error
 ///
 /// You should not use this function unless you are within this contract. It is not for other contract use
-/// unless you also use TokenMsg's, which is the entire point of this contract to not have to do.
+/// unless you also use TokenFactoryMsg's, which is the entire point of this contract to not have to do.
 pub fn mint_factory_token_messages(
     address: &String,
     denoms: &Vec<Coin>,
-) -> Result<Vec<TokenMsg>, ContractError> {
+) -> Result<Vec<TokenFactoryMsg>, ContractError> {
     if denoms.is_empty() {
         return Err(ContractError::NoDenomsProvided {});
     }
 
-    let msgs: Vec<TokenMsg> = denoms
+    let msgs: Vec<TokenFactoryMsg> = denoms
         .iter()
         .filter(|d| denoms.iter().any(|d2| d2.denom == d.denom))
-        .map(|d| TokenMsg::MintTokens {
+        .map(|d| TokenFactoryMsg::MintTokens {
             denom: d.denom.clone(),
             amount: d.amount,
             mint_to_address: address.to_string(),
@@ -55,8 +55,8 @@ pub fn pretty_denoms_output(denoms: &[Coin]) -> String {
         .join(", ")
 }
 
-pub fn create_denom_msg(subdenom: String, full_denom: String, denom: NewDenom) -> TokenMsg {
-    TokenMsg::CreateDenom {
+pub fn create_denom_msg(subdenom: String, full_denom: String, denom: NewDenom) -> TokenFactoryMsg {
+    TokenFactoryMsg::CreateDenom {
         subdenom,
         metadata: Some(Metadata {
             name: Some(denom.name),
@@ -80,8 +80,8 @@ pub fn create_denom_msg(subdenom: String, full_denom: String, denom: NewDenom) -
     }
 }
 
-pub fn mint_tokens_msg(address: String, denom: String, amount: Uint128) -> TokenMsg {
-    TokenMsg::MintTokens {
+pub fn mint_tokens_msg(address: String, denom: String, amount: Uint128) -> TokenFactoryMsg {
+    TokenFactoryMsg::MintTokens {
         denom,
         amount,
         mint_to_address: address,
